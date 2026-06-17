@@ -1,4 +1,6 @@
 from typing import List, Dict, Tuple, Optional
+import hashlib
+import json
 import numpy as np
 from dataclasses import dataclass, field
 
@@ -16,6 +18,11 @@ class ReasoningPath:
     @property
     def length(self) -> int:
         return len(self.nodes)
+    
+    def __hash__(self) -> int:
+        node_ids = tuple(n.id for n in self.nodes)
+        edge_ids = tuple((e.source_id, e.target_id) for e in self.edges)
+        return hash((node_ids, edge_ids))
 
 class HybridReasoningEngine:
     """
@@ -27,7 +34,7 @@ class HybridReasoningEngine:
         self.graph = graph
         self.gating = gating or OscillatoryGating()
         self.active_paths: List[ReasoningPath] = []
-        self.prev_best_path_id: Optional[int] = None
+        self.prev_best_path_hash: Optional[int] = None
         self.stability_counter: int = 0
         self.convergence_threshold: float = 0.1 # Minimum Mu to consider
         
@@ -147,19 +154,19 @@ class HybridReasoningEngine:
         # Check if the best path has been consistently selected
         
         if best_path and best_mu > self.convergence_threshold:
-            current_path_id = id(best_path)
+            current_path_hash = hash(best_path)
             
-            if current_path_id == self.prev_best_path_id:
+            if current_path_hash == self.prev_best_path_hash:
                 self.stability_counter += 1
             else:
                 self.stability_counter = 0
-                self.prev_best_path_id = current_path_id
+                self.prev_best_path_hash = current_path_hash
                 
             # If stable for N cycles, converge
             if self.stability_counter >= 5:
                 return best_path
         else:
              self.stability_counter = 0
-             self.prev_best_path_id = None
+             self.prev_best_path_hash = None
             
         return None

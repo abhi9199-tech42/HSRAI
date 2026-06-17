@@ -63,8 +63,11 @@ class ResonanceState:
         # Ensure mu = rho / chi (with epsilon for stability)
         calculated_mu = self.rho_density / (self.chi_cost + 1e-9)
         if not np.isclose(self.mu_value, calculated_mu, rtol=1e-3):
-            # We allow slight variance for legacy reasons but enforce calculation in core logic
-            pass
+            raise ValueError(
+                f"mu_value ({self.mu_value:.6f}) does not match "
+                f"rho/chi ({calculated_mu:.6f}). "
+                f"mu_value must equal rho_density / (chi_cost + epsilon)."
+            )
 
 
 @dataclass
