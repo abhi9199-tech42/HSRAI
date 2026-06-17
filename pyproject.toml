@@ -29,6 +29,15 @@ api = [
     "fastapi>=0.100.0",
     "uvicorn>=0.23.0",
 ]
+nlp = [
+    "sentence-transformers>=2.2.0",
+]
+neo4j = [
+    "neo4j>=5.0.0",
+]
+all = [
+    "hsrai[dev,api,nlp,neo4j]",
+]
 
 [project.scripts]
 hsrai = "hsrai.cli:main"
