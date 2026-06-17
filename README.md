@@ -60,6 +60,34 @@ Every assessment comes with:
 - **ECDSA trust certificate** (cryptographically signed)
 - **Reasoning path** (auditable graph traversal)
 
+### Medical Diagnosis (Live Demo)
+
+```
+$ python -m usecases.medical_diagnosis.demo
+
+Patient: PAT002 (68yo F)
+Symptoms: cough, fever, dyspnea, sputum production, chest pain
+
+  RISK LEVEL:    CRITICAL
+  URGENCY:       EMERGENT
+  CONFIDENCE:    94%
+
+  Differential Diagnoses:
+    1. Community-Acquired Pneumonia (J18.9)
+       Probability: 93.9%
+
+  Recommendations:
+    > EMERGENT: Initiate immediate medical intervention
+    > Activate rapid response team
+  Trust Certificate: cert_26470ef9
+```
+
+Features:
+- **10 conditions** in knowledge base (diabetes, pneumonia, MI, sepsis, UTI, etc.)
+- **8 drugs** with interaction/contraindication checks
+- **Differential diagnoses** ranked by probability
+- **Drug safety warnings** (interactions + contraindications)
+
 ### REST API
 
 ```bash
@@ -302,6 +330,7 @@ HSRAI/
 ├── isre/                     # Research implementation
 │   └── tests/                # 82 tests
 ├── usecases/fraud_detection/ # Real-world use case
+├── usecases/medical_diagnosis/ # Medical diagnosis use case
 ├── benchmarks/               # Performance benchmarks
 ├── docs/                     # API + CLI documentation
 └── .github/workflows/        # CI/CD
@@ -323,6 +352,9 @@ python -m benchmarks.benchmarks
 
 # Run fraud demo
 python -m usecases.fraud_detection.demo
+
+# Run medical diagnosis demo
+python -m usecases.medical_diagnosis.demo
 ```
 
 ---

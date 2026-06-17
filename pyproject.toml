@@ -35,15 +35,18 @@ nlp = [
 neo4j = [
     "neo4j>=5.0.0",
 ]
+usecases = [
+    "sentence-transformers>=2.2.0",
+]
 all = [
-    "hsrai[dev,api,nlp,neo4j]",
+    "hsrai[dev,api,nlp,neo4j,usecases]",
 ]
 
 [project.scripts]
 hsrai = "hsrai.cli:main"
 
 [tool.pytest.ini_options]
-testpaths = ["hsrai/tests", "urcm/tests", "isre/tests"]
+testpaths = ["hsrai/tests", "urcm/tests", "isre/tests", "usecases"]
 
 [tool.ruff]
 line-length = 120
