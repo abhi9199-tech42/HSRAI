@@ -4,6 +4,7 @@ from hsrai.reasoning.hybrid_engine import ReasoningPath
 from hsrai.system.controller import SystemController
 
 class GraphObserver(Protocol):
+    """Protocol for observing graph construction and reasoning events."""
     def on_graph_built(self, graph: IntentGraph, request_id: str) -> None:
         """Called when the intent graph is constructed, before reasoning."""
         ...

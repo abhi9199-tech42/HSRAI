@@ -1,13 +1,14 @@
 import uuid
 import hashlib
 import json
+import os
 import base64
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from datetime import datetime
 
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec
-from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
+from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat, PrivateFormat, NoEncryption
 from cryptography.exceptions import InvalidSignature
 
 from hsrai.core.models import TrustCertificate, SemanticPrimitive
@@ -61,15 +62,45 @@ class TrustManager:
     Manages cryptographic attestation and trust verification.
     """
     
-    def __init__(self, issuer_id: str = "HSRAI_CORE"):
+    def __init__(self, issuer_id: str = "HSRAI_CORE", key_path: Optional[str] = None):
         self.issuer_id = issuer_id
+        self.key_path = key_path
         self.verifier = BehavioralVerifier()
         self.certificate_chain: List[TrustCertificate] = []
         
-        # Generate ECC Private Key (SECP256R1)
-        self._private_key = ec.generate_private_key(ec.SECP256R1())
+        if key_path and os.path.exists(key_path):
+            self._load_key(key_path)
+        else:
+            # Generate ECC Private Key (SECP256R1)
+            self._private_key = ec.generate_private_key(ec.SECP256R1())
+        
         self.public_key = self._private_key.public_key()
         
+    def _load_key(self, path: str) -> None:
+        """Load a private key from a PEM file."""
+        from cryptography.hazmat.primitives.serialization import load_pem_private_key
+        with open(path, 'rb') as f:
+            self._private_key = load_pem_private_key(f.read(), password=None)
+
+    def save_keys(self) -> None:
+        """Save the current private key to key_path."""
+        if not self.key_path:
+            raise ValueError("No key_path configured; cannot save keys")
+        os.makedirs(os.path.dirname(self.key_path) or '.', exist_ok=True)
+        with open(self.key_path, 'wb') as f:
+            f.write(self._private_key.private_bytes(
+                encoding=Encoding.PEM,
+                format=PrivateFormat.PKCS8,
+                encryption_algorithm=NoEncryption(),
+            ))
+
+    def rotate_keys(self) -> None:
+        """Generate a new key pair, replacing the current one."""
+        self._private_key = ec.generate_private_key(ec.SECP256R1())
+        self.public_key = self._private_key.public_key()
+        if self.key_path:
+            self.save_keys()
+
     def generate_certificate(self, subject: Any, subject_id: str) -> TrustCertificate:
         """
         Generate a TrustCertificate for a given subject (Node, Path, etc.).

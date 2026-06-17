@@ -10,6 +10,7 @@ from hsrai.reasoning.oscillatory import OscillatoryGating
 
 @dataclass
 class ReasoningPath:
+    """A candidate reasoning path through the intent graph with stability metrics."""
     nodes: List[IntentNode]
     edges: List[IntentEdge]
     mu_stability: float = 0.0

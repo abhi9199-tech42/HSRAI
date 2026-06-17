@@ -158,13 +158,16 @@ class MeshNode:
             self.error_history.pop(0)
 
 class MeshNetwork:
-    """
-    Manager to simulate/orchestrate a collection of MeshNodes.
+    """Orchestrates a decentralized cognitive mesh of MeshNodes.
+
+    Manages node registration, topology creation, and broadcast coordination
+    for privacy-preserving distributed resonance synchronization.
     """
     def __init__(self):
         self.nodes: Dict[str, MeshNode] = {}
         
     def add_node(self, node: MeshNode):
+        """Register a MeshNode with the network."""
         self.nodes[node.node_id] = node
         
     def create_fully_connected(self):

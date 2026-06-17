@@ -3,6 +3,7 @@ from typing import List, Dict, Any, Optional
 from enum import Enum
 
 class KnowledgeSourceType(Enum):
+    """Origin of knowledge entries in the system."""
     INTERNAL_DB = "internal_db"
     EXTERNAL_API = "external_api"
     BEHAVIORAL_LIBRARY = "behavioral_library"
@@ -11,6 +12,7 @@ class KnowledgeSourceType(Enum):
 
 @dataclass
 class KnowledgeEntry:
+    """A single unit of knowledge stored in the knowledge base."""
     id: str
     content: Any
     source_type: KnowledgeSourceType
@@ -20,6 +22,7 @@ class KnowledgeEntry:
 
 @dataclass
 class KnowledgeGap:
+    """Represents missing information that limits reasoning confidence."""
     description: str
     missing_fields: List[str]
     criticality: float # 0.0 to 1.0
