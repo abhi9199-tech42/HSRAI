@@ -1,6 +1,6 @@
 import asyncio
+import logging
 import time
-import uuid
 from typing import Dict, Any, Optional
 from dataclasses import dataclass
 
@@ -16,6 +16,8 @@ from hsrai.knowledge.query import KnowledgeQueryEngine
 
 from hsrai.system.config import SystemConfig
 from hsrai.plugins.manager import PluginManager
+
+logger = logging.getLogger(__name__)
 
 class SystemController:
     """
@@ -46,6 +48,9 @@ class SystemController:
         """
         Process a text request through the full pipeline.
         """
+        if not input_text or not input_text.strip():
+            return self._create_error_response("Input text cannot be empty", request_id or "empty")
+        
         if request_id is None:
             # Deterministic Request ID based on input content
             # This ensures that the same input produces the same trace and semantic artifacts
@@ -102,7 +107,7 @@ class SystemController:
                 try:
                     observer.on_graph_built(builder.get_graph(), request_id)
                 except Exception as e:
-                    print(f"Observer error: {e}")
+                    logger.warning("Observer error: %s", e)
 
         # 4. Reasoning
         reasoning_plugin = self.plugin_manager.get_reasoning()
@@ -141,7 +146,7 @@ class SystemController:
                 try:
                     observer.on_path_found(path, request_id)
                 except Exception as e:
-                    print(f"Observer error: {e}")
+                    logger.warning("Observer error: %s", e)
 
         # 5. Output Generation
         output_plugin = self.plugin_manager.get_output()

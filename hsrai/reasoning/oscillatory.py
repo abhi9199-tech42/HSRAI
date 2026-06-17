@@ -13,8 +13,8 @@ class OscillatoryGating:
         self.phase = 0.0
         
         # Initialize Gating Weights (W_g) and Bias (b)
-        np.random.seed(42)  # Deterministic initialization
-        self.W_g = np.random.normal(0, 0.5, (resonance_dim, 2))
+        rng = np.random.default_rng(42)
+        self.W_g = rng.normal(0, 0.5, (resonance_dim, 2))
         self.bias = np.zeros(resonance_dim) # Start neutral
         
     def get_global_rhythm(self) -> np.ndarray:

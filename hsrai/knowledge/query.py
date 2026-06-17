@@ -2,6 +2,8 @@ from typing import Dict, List, Any, Protocol, Optional
 import logging
 
 from hsrai.core.utils import deterministic_id
+
+logger = logging.getLogger(__name__)
 from hsrai.knowledge.models import KnowledgeEntry, KnowledgeSourceType, KnowledgeGap
 from hsrai.trust.verifier import TrustManager
 
@@ -72,8 +74,7 @@ class KnowledgeQueryEngine:
                     results = source.query(query_string)
                     all_results.extend(results)
                 except Exception as e:
-                    # Log error but continue
-                    print(f"Error querying source: {e}")
+                    logger.warning("Error querying source: %s", e)
                     
         return all_results
 

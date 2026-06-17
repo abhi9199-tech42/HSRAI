@@ -1,22 +1,4 @@
-from enum import Enum, auto
-from typing import List, Dict, Any, Optional, Union
-from pydantic import BaseModel, Field
+# Re-export from canonical source
+from hsrai.common.types import IntentType, EdgeType, SemanticType
 
-class IntentType(Enum):
-    GOAL = "goal"
-    CONTEXT = "context"
-    QUERY = "query"
-    CONSTRAINT = "constraint"
-    EMOTION = "emotion"
-
-class EdgeType(Enum):
-    CAUSAL = "causal"
-    TEMPORAL = "temporal"
-    LOGICAL = "logical"
-    PRIORITY = "priority"
-
-class SemanticType(Enum):
-    CONCEPT = "concept"
-    ACTION = "action"
-    ATTRIBUTE = "attribute"
-    RELATION = "relation"
+__all__ = ["IntentType", "EdgeType", "SemanticType"]

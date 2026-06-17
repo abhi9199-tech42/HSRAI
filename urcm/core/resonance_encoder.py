@@ -56,12 +56,12 @@ class ResonancePathEncoder:
         using pure NumPy for temporal integration.
         """
         # Random projection matrix from Input -> Resonance Space
-        np.random.seed(42)  # Deterministic initialization for consistency
-        self.W_in = np.random.normal(0, 0.1, (self.input_dim, self.resonance_dim))
+        rng = np.random.default_rng(42)
+        self.W_in = rng.normal(0, 0.1, (self.input_dim, self.resonance_dim))
         
         # Recurrent weight matrix (Resonance -> Resonance)
         # Scaled to be stable (spectral radius < 1 generally, but close to 1 for long memory)
-        self.W_res = np.random.normal(0, 0.1, (self.resonance_dim, self.resonance_dim))
+        self.W_res = rng.normal(0, 0.1, (self.resonance_dim, self.resonance_dim))
         
         # Ensure spectral radius is < 1 to prevent explosion
         spectral_radius = np.max(np.abs(np.linalg.eigvals(self.W_res)))
@@ -69,21 +69,17 @@ class ResonancePathEncoder:
             self.W_res = self.W_res / (spectral_radius * 1.1)
             
         # Bias
-        self.bias = np.random.normal(0, 0.01, self.resonance_dim)
+        self.bias = rng.normal(0, 0.01, self.resonance_dim)
 
     def _init_transformer_stub(self):
         """
         Initialize weights for a lightweight Transformer-like attention mechanism.
         (Stub implementation for future expansion).
         """
-        np.random.seed(42)
-        # Simple Query/Key/Value projection simulation
-        # W_q: Input -> hidden
-        # W_k: Input -> hidden
-        # W_v: Input -> Resonance
-        self.W_q = np.random.normal(0, 0.1, (self.input_dim, 32))
-        self.W_k = np.random.normal(0, 0.1, (self.input_dim, 32))
-        self.W_v = np.random.normal(0, 0.1, (self.input_dim, self.resonance_dim))
+        rng = np.random.default_rng(42)
+        self.W_q = rng.normal(0, 0.1, (self.input_dim, 32))
+        self.W_k = rng.normal(0, 0.1, (self.input_dim, 32))
+        self.W_v = rng.normal(0, 0.1, (self.input_dim, self.resonance_dim))
         
     def encode_path(self, frequency_path: Union[FrequencyPath, np.ndarray]) -> np.ndarray:
         """
