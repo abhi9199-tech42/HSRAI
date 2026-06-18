@@ -22,7 +22,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip setuptools wheel
-          pip install "numpy<2" "scipy<1.14" "pydantic<3" "cryptography<45"
+          pip install "numpy<2" "scipy<=1.11.4" "pydantic<3" "cryptography<45"
           pip install -e ".[dev,api]" --verbose --no-build-isolation
           pip install pytest-timeout
       - name: Run ruff check (non-blocking)
