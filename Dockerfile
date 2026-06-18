@@ -7,9 +7,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     rm -rf /var/lib/apt/lists/*
 
 COPY pyproject.toml ./
-COPY requirements.txt ./ 2>/dev/null || true
 
-RUN pip install --no-cache-dir -e ".[api,nlp]" 2>/dev/null || \
+RUN pip install --no-cache-dir -e ".[api,nlp]" || \
     pip install --no-cache-dir numpy scipy pydantic cryptography fastapi uvicorn
 
 COPY hsrai/ ./hsrai/
