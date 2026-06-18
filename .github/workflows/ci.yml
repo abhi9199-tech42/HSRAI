@@ -23,7 +23,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
-          pip install -e ".[dev,api]"
+          pip install --upgrade pip setuptools wheel
+          pip install -e ".[dev,api]" --verbose
       - name: Run ruff check
         run: ruff check hsrai/ urcm/ isre/
       - name: Run tests
