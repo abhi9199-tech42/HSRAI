@@ -85,7 +85,7 @@ class TestApplyGating:
 
     def test_sigmoid_output_in_0_1(self):
         og = OscillatoryGating(resonance_dim=64)
-        rv = np.ones(64)
+        np.ones(64)
         g = og.get_global_rhythm()
         gate_signal = np.dot(og.W_g, g) + og.bias
         sigmoid = 1.0 / (1.0 + np.exp(-gate_signal))

@@ -1,7 +1,7 @@
 """
 ISRE-URCM Bridge: Resonance Calculator for Intents.
 
-This module provides the bridge between ISRE's High-Level Intents and 
+This module provides the bridge between ISRE's High-Level Intents and
 URCM's Low-Level Frequency/Resonance mechanics.
 """
 
@@ -26,7 +26,7 @@ class IntentResonanceBridge:
     def resonate_on_intent(self, intent: IntentNode, context_state: np.ndarray) -> float:
         """
         Calculates the µ-Resonance of a specific intent against a context.
-        
+
         Process:
         1. Convert Intent Description -> Phoneme Wave (Carrier Wave)
         2. Extract Semantic Density (rho) of the description

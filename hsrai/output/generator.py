@@ -10,7 +10,7 @@ from hsrai.trust.verifier import TrustManager
 
 class OutputGenerator:
     """
-    Reconstructs semantic decisions into human-readable formats 
+    Reconstructs semantic decisions into human-readable formats
     (Text, Code, Action Plans) and embeds trust certificates.
     """
 

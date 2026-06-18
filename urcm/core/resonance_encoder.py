@@ -20,7 +20,7 @@ from urcm.core.theory import URCMTheory
 class ResonancePathEncoder:
     """
     Encodes frequency paths into resonance states using temporal processing.
-    
+
     This system works like a 'Semantic Ear', listening to the sequence of
     phoneme frequencies and building up a stable 'chord' (ResonanceState)
     that represents the meaning.
@@ -34,7 +34,7 @@ class ResonancePathEncoder:
     ):
         """
         Initialize the encoder.
-        
+
         Args:
             input_dim: Dimensionality of input frequency vectors (K).
             resonance_dim: Dimensionality of the output resonance state.
@@ -86,10 +86,10 @@ class ResonancePathEncoder:
     def encode_path(self, frequency_path: Union[FrequencyPath, np.ndarray]) -> np.ndarray:
         """
         Convert a frequency path into a final resonance vector.
-        
+
         Args:
             frequency_path: Input mechanism (FrequencyPath object or raw numpy array).
-            
+
         Returns:
             np.ndarray: The final resonance vector (1D array of size resonance_dim).
         """
@@ -164,10 +164,10 @@ class ResonancePathEncoder:
     def get_resonance_state(self, frequency_path: FrequencyPath) -> ResonanceState:
         """
         Generate a complete ResonanceState object with metadata and theoretical metrics.
-        
+
         Args:
             frequency_path: The input frequency path.
-            
+
         Returns:
             ResonanceState: Fully computed state ready for the Reasoning Engine.
         """

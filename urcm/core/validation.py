@@ -9,8 +9,9 @@ import logging
 
 import numpy as np
 
-from .data_models import AttractorState, MeshSignal, ReasoningPath, ResonanceState
 from hsrai.common.phoneme import FrequencyPath, PhonemeSequence
+
+from .data_models import AttractorState, MeshSignal, ReasoningPath, ResonanceState
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +61,7 @@ class DataValidation:
                 distances = np.linalg.norm(diffs, axis=1)
                 # For property-based testing, we use a more lenient threshold
                 # The smoothness score should reflect the actual smoothness
-                max_distance = np.max(distances) if len(distances) > 0 else 0.0
+                np.max(distances) if len(distances) > 0 else 0.0
                 # The smoothness constraint is that the smoothness_score should be reasonable
                 # relative to the actual path smoothness
                 if path.smoothness_score < 0:

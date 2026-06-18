@@ -23,7 +23,7 @@ class URCMTheory:
     def calculate_rho(resonance_vector: np.ndarray) -> float:
         """
         Operationalizes Semantic Density (rho).
-        
+
         Definition: Rho is the inverse normalized entropy of the resonance vector.
         High rho = sharp semantic focus (low entropy).
         Low rho = noisy/vague state (high entropy).
@@ -44,7 +44,7 @@ class URCMTheory:
     def calculate_chi(current_state: np.ndarray, previous_state: np.ndarray) -> float:
         """
         Operationalizes Transformation Cost (chi).
-        
+
         Definition: Chi is the path integral of the manifold displacement.
         Mathematically, the L2 distance between successive states in frequency space.
         """
@@ -54,9 +54,9 @@ class URCMTheory:
     def compute_mu(rho: float, chi: float) -> float:
         """
         Operationalizes System Resonance (mu).
-        
+
         mu = rho / (chi + epsilon)
-        High resonance is achieved when high information purity (rho) is reached 
+        High resonance is achieved when high information purity (rho) is reached
         at low computational/transformation cost (chi).
         """
         epsilon = 1e-6
@@ -65,8 +65,8 @@ class URCMTheory:
 class ResonantLearning:
     """
     The Learning Story: How attractors form and update.
-    
-    Implements 'Resonant Hebbian Learning' where attractor weights are updated 
+
+    Implements 'Resonant Hebbian Learning' where attractor weights are updated
     proportionally to the achieved resonance (mu).
     """
 

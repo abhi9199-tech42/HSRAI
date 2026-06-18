@@ -65,7 +65,7 @@ class IntentGraphBuilder:
     def detect_conflicts(self) -> List[Dict[str, Any]]:
         """
         Detect explicit conflicts in the graph.
-        Current Rule: A Constraint connected to a Goal via a PRIORITY edge 
+        Current Rule: A Constraint connected to a Goal via a PRIORITY edge
         implies a potential resource conflict or blocking state.
         """
         conflicts = []

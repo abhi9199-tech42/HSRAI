@@ -24,7 +24,7 @@ from urcm.core.resonance_encoder import ResonancePathEncoder
 class URCMSystem:
     """
     The main URCM System class.
-    
+
     Integrates all sub-systems to provide a complete frequency-based reasoning pipeline.
     """
 
@@ -92,7 +92,7 @@ class URCMSystem:
     def process_query(self, text: str) -> ReasoningPath:
         """
         Process a text query through the complete URCM pipeline.
-        
+
         Steps:
         1. Text -> Frequency Path
         2. Frequency Path -> Initial Resonance State

@@ -52,7 +52,7 @@ class PerformanceMetrics:
 class OptimizedPhonemeSet:
     """
     Memory-efficient phoneme set management.
-    
+
     Uses compact representations and caching to minimize memory footprint
     while maintaining fast lookup performance.
     """
@@ -113,11 +113,11 @@ class OptimizedPhonemeSet:
     def get_frequency_vector(self, phoneme: str, use_cache: bool = True) -> np.ndarray:
         """
         Get frequency vector for phoneme with caching.
-        
+
         Args:
             phoneme: Phoneme string
             use_cache: Whether to use cache (default True)
-            
+
         Returns:
             K-dimensional frequency vector
         """
@@ -147,7 +147,7 @@ class OptimizedPhonemeSet:
     def _generate_frequency_vector(self, phoneme: str, phoneme_id: int) -> np.ndarray:
         """
         Generate K-dimensional frequency vector for phoneme.
-        
+
         Uses deterministic generation based on phoneme articulatory properties.
         """
         # Seed based on phoneme ID for reproducibility
@@ -198,7 +198,7 @@ class OptimizedPhonemeSet:
 class CompressionMonitor:
     """
     Monitors compression efficiency of semantic latent space.
-    
+
     Tracks compression ratios and ensures efficiency constraints are met.
     """
 
@@ -248,7 +248,7 @@ class CompressionMonitor:
 class PerformanceBenchmark:
     """
     Benchmarks URCM performance against token-based systems.
-    
+
     Compares memory usage, processing speed, and compression efficiency.
     """
 
@@ -263,12 +263,12 @@ class PerformanceBenchmark:
     ) -> Dict[str, Any]:
         """
         Compare memory usage: URCM vs token-based systems.
-        
+
         Args:
             text: Input text to process
             phoneme_set: Optimized phoneme set
             latent_dim: Latent space dimension
-            
+
         Returns:
             Comparison metrics
         """
@@ -324,11 +324,11 @@ class PerformanceBenchmark:
     ) -> Dict[str, Any]:
         """
         Benchmark phoneme processing speed.
-        
+
         Args:
             phoneme_set: Optimized phoneme set
             num_phonemes: Number of phonemes to process
-            
+
         Returns:
             Processing speed metrics
         """
@@ -371,11 +371,11 @@ class PerformanceBenchmark:
     ) -> Dict[str, Any]:
         """
         Benchmark compression efficiency.
-        
+
         Args:
             input_dims: List of input dimensionalities
             compressed_dims: List of compressed dimensionalities
-            
+
         Returns:
             Compression efficiency metrics
         """

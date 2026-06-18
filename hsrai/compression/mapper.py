@@ -40,7 +40,7 @@ class PhonemeFrequencyMapper:
     def __init__(self, frequency_dim: int = 24, smoothness_weight: float = 0.1):
         """
         Initialize the phoneme-frequency mapper.
-        
+
         Args:
             frequency_dim: Dimensionality of frequency vectors (K ∈ [16, 32])
             smoothness_weight: Weight for smoothness constraint enforcement

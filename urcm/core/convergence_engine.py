@@ -10,7 +10,7 @@ from urcm.core.theory import URCMTheory
 class MuConvergenceEngine:
     """
     Core reasoning engine that drives semantic convergence based on μ-stability.
-    
+
     This engine manages multiple competing reasoning paths, selecting those with
     the highest Resonance (μ) and pruning others. It rigorously dictates when
     reasoning terminates based on the stability of Δμ.
@@ -25,7 +25,7 @@ class MuConvergenceEngine:
     ):
         """
         Initialize the convergence engine.
-        
+
         Args:
             rho_threshold: Minimum semantic density required to be considered a valid path.
             convergence_epsilon: Threshold for Δμ below which the system is considered converged.
@@ -106,11 +106,11 @@ class MuConvergenceEngine:
     ) -> List[ReasoningPath]:
         """
         Executes the main resonance loop.
-        
+
         Args:
             initial_state: The starting resonance state (e.g. from encoded query).
             next_state_generator: Function that proposes candidate next states.
-            
+
         Returns:
             List of converged ReasoningPath objects (best ones first).
         """

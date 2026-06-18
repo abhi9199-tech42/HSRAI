@@ -82,7 +82,6 @@ class ReasoningPathGenerator:
 
     def _create_path(self, steps: List[IntentNode], strategy_name: str, activation_scale: float = 1.0) -> ReasoningPath:
         # Calculate initial semantic coherence (mock calculation based on node types)
-        coherence = 1.0
         # Penalty for mixed goals/constraints without resolution?
 
         return ReasoningPath(

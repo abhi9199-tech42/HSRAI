@@ -9,17 +9,17 @@ from urcm.core.data_models import AttractorState
 class AttractorNetwork:
     """
     Hopfield-Kuramoto Attractor Network.
-    
+
     Combines Kuramoto oscillator dynamics for temporal synchronization
     with Hopfield-like attractor basins for semantic stability.
-    
+
     Dynamics: dθi/dt = ωi + (K/N)Σsin(θj - θi)
     """
 
     def __init__(self, size: int, coupling_strength: float = 2.0):
         """
         Initialize the Attractor Network.
-        
+
         Args:
             size: Number of oscillators (N).
             coupling_strength: Global coupling constant (K). K > Kc implies sync.
@@ -97,7 +97,7 @@ class AttractorNetwork:
         # d/dθj [ ... + (K/N)sin(θj - θi) ... ] = (K/N)cos(θj - θi)
         # d/dθi [ ... + (K/N)sin(θj - θi) ... ] = (K/N) * sum_j [ -cos(θj - θi) ]
 
-        row_sums = np.sum(J, axis=1) # Sum of J_ij including diagonal (K/N)
+        np.sum(J, axis=1) # Sum of J_ij including diagonal (K/N)
 
         # d(f_i)/d(theta_i) is - (K/N) * sum_j cos(theta_j - theta_i)
         # which is exactly -row_sums

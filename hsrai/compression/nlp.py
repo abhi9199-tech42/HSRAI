@@ -22,10 +22,10 @@ logger = logging.getLogger(__name__)
 class NLPCompressor:
     """
     Real NLP compression using sentence-transformers.
-    
+
     Converts text to 384-dimensional semantic embeddings using the
     all-MiniLM-L6-v2 model (or any sentence-transformers model).
-    
+
     This replaces the trivial text[:50] truncation with actual
     semantic understanding.
     """
@@ -33,7 +33,7 @@ class NLPCompressor:
     def __init__(self, model_name: str = "all-MiniLM-L6-v2", device: str = "cpu"):
         """
         Initialize the NLP compressor.
-        
+
         Args:
             model_name: Sentence-transformers model name
             device: Device to run on ('cpu' or 'cuda')
@@ -66,10 +66,10 @@ class NLPCompressor:
     def embed(self, text: str) -> np.ndarray:
         """
         Convert text to a semantic embedding vector.
-        
+
         Args:
             text: Input text
-            
+
         Returns:
             Normalized embedding vector of shape (embedding_dim,)
         """
@@ -80,10 +80,10 @@ class NLPCompressor:
     def embed_batch(self, texts: List[str]) -> np.ndarray:
         """
         Convert multiple texts to embeddings.
-        
+
         Args:
             texts: List of input texts
-            
+
         Returns:
             Array of shape (n_texts, embedding_dim)
         """
@@ -94,11 +94,11 @@ class NLPCompressor:
     def similarity(self, text_a: str, text_b: str) -> float:
         """
         Compute cosine similarity between two texts.
-        
+
         Args:
             text_a: First text
             text_b: Second text
-            
+
         Returns:
             Similarity score in [-1, 1]
         """
@@ -110,7 +110,7 @@ class NLPCompressor:
         """
         Classify the intent of a text using semantic similarity to
         predefined intent categories.
-        
+
         Returns:
             Dict mapping intent labels to confidence scores
         """
@@ -136,7 +136,7 @@ class NLPCompressor:
         """
         Simple entity extraction using pattern matching.
         For production, use spaCy NER.
-        
+
         Returns:
             List of dicts with 'text' and 'label' keys
         """
@@ -164,7 +164,7 @@ class NLPCompressor:
     def compress_to_primitive(self, text: str, source_id: str = "user") -> SemanticPrimitive:
         """
         Full compression pipeline: text → embedding → SemanticPrimitive.
-        
+
         The embedding is stored in compression_metadata for downstream
         reasoning engines to use.
         """

@@ -10,7 +10,7 @@ from urcm.core.data_models import MeshSignal
 class MeshNode:
     """
     Represents a single node in the decentralized cognitive mesh.
-    
+
     A MeshNode encapsulates a local reasoning instance (abstracted here) and participates
     in the global resonance through privacy-preserving signal exchange.
     """

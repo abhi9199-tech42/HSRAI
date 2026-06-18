@@ -98,7 +98,7 @@ class TestCompressionMonitor:
     def test_efficiency_empty(self):
         eff = self.monitor.get_compression_efficiency()
         assert eff["average_ratio"] == 0.0
-        assert eff["meets_threshold"] == False
+        assert not eff["meets_threshold"]
 
     def test_efficiency_with_data(self):
         self.monitor.record_compression(100.0, 40.0)

@@ -109,7 +109,7 @@ class ContextLoader:
     def load_context_state(self, active_concepts: List[str]) -> np.ndarray:
         """
         Converts a list of active concepts into a unified Context Resonance Field.
-        
+
         Process:
         1. Query KB for each concept.
         2. Convert valid facts to text descriptions.

@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 class ErrorRecoverySystem:
     """
     Comprehensive error handling and recovery system for the URCM via mechanism.
-    
+
     Strategies:
     1. Frequency Drift Detection -> Phoneme Region Projection
     2. Semantic Collapse Detection -> Reconstruction Anchoring (Attractor)

@@ -6,7 +6,7 @@ import numpy as np
 class OscillatoryGating:
     """
     Manages the global oscillatory rhythm and applies gating to resonance states.
-    
+
     Implements the equation: ỹt = yt ⊙ σ(Wg·g(t) + b)
     """
 
@@ -45,11 +45,11 @@ class OscillatoryGating:
     def apply_gating(self, resonance_vector: np.ndarray, dt: float = 0.0) -> np.ndarray:
         """
         Applies oscillatory gating to a resonance vector.
-        
+
         Args:
             resonance_vector: The input vector y_t.
             dt: Optional time increment to advance phase before gating.
-            
+
         Returns:
             The gated vector ỹt = yt ⊙ σ(Wg·g(t) + b).
         """

@@ -41,7 +41,7 @@ async def test_api_inspection_modification():
     api.register_observer(observer)
 
     # Run request
-    result = await api.process("Hello world")
+    await api.process("Hello world")
 
     # Verify inspection
     assert observer.graph_captured is not None

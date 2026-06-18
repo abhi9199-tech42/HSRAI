@@ -1,7 +1,8 @@
 """Core components of the URCM system."""
 
-from .data_models import AttractorState, MeshSignal, ReasoningPath, ResonanceState
 from hsrai.common.phoneme import FrequencyPath, PhonemeSequence
+
+from .data_models import AttractorState, MeshSignal, ReasoningPath, ResonanceState
 from .mesh import MeshNetwork, MeshNode
 from .performance import CompressionMonitor, OptimizedPhonemeSet, PerformanceBenchmark, PerformanceMetrics
 from .phoneme_mapper import PhonemeFrequencyMapper, PhonemeFrequencyPipeline, TextToPhonemeConverter

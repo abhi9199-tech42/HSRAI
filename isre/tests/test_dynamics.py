@@ -65,11 +65,8 @@ class TestOscillatoryGate:
 
     def test_eigenvalue_computation(self):
         gate = OscillatoryGate(frequency=1.0, bifurcation=1.0)
-        omega = gate.omega
         mu = gate.mu
         # Eigenvalues of linearized Hopf: lambda = mu ± i*omega
-        expected_real = mu
-        expected_imag = omega
         # For mu=1.0 the limit cycle radius is sqrt(mu)=1
         r = np.sqrt(abs(mu))
         assert r == pytest.approx(1.0)

@@ -18,7 +18,7 @@ from hsrai.common.phoneme import FrequencyPath, PhonemeSequence
 class PhonemeFrequencyMapper:
     """
     Maps Sanskrit-derived phonemes to continuous frequency vectors in K-dimensional space.
-    
+
     This class implements the core transformation from discrete phonemes to continuous
     frequency representations, enforcing smoothness constraints and maintaining
     consistency across mappings.
@@ -54,7 +54,7 @@ class PhonemeFrequencyMapper:
     def __init__(self, frequency_dim: int = 24, smoothness_weight: float = 0.1):
         """
         Initialize the phoneme-frequency mapper.
-        
+
         Args:
             frequency_dim: Dimensionality of frequency vectors (K ∈ [16, 32])
             smoothness_weight: Weight for smoothness constraint enforcement
@@ -182,13 +182,13 @@ class PhonemeFrequencyMapper:
     def map_phoneme(self, phoneme: str) -> np.ndarray:
         """
         Map single phoneme to frequency vector.
-        
+
         Args:
             phoneme: Sanskrit phoneme to map
-            
+
         Returns:
             K-dimensional frequency vector
-            
+
         Raises:
             ValueError: If phoneme is not in the Sanskrit phoneme set
         """
@@ -200,13 +200,13 @@ class PhonemeFrequencyMapper:
     def map_sequence(self, phonemes: List[str]) -> np.ndarray:
         """
         Map phoneme sequence to frequency path.
-        
+
         Args:
             phonemes: List of Sanskrit phonemes
-            
+
         Returns:
             Frequency path matrix of shape (len(phonemes), K)
-            
+
         Raises:
             ValueError: If any phoneme is not in the Sanskrit phoneme set
         """
@@ -230,13 +230,13 @@ class PhonemeFrequencyMapper:
     def enforce_smoothness(self, path: np.ndarray) -> np.ndarray:
         """
         Apply smoothness constraints to frequency path.
-        
+
         This method minimizes ||f(pi) - f(pj)||² for adjacent phonemes
         while preserving the overall semantic structure.
-        
+
         Args:
             path: Original frequency path of shape (sequence_length, K)
-            
+
         Returns:
             Smoothed frequency path with same shape
         """
@@ -269,10 +269,10 @@ class PhonemeFrequencyMapper:
     def calculate_smoothness_score(self, path: np.ndarray) -> float:
         """
         Calculate smoothness score for a frequency path.
-        
+
         Args:
             path: Frequency path of shape (sequence_length, K)
-            
+
         Returns:
             Smoothness score (lower values indicate smoother paths)
         """
@@ -291,10 +291,10 @@ class PhonemeFrequencyMapper:
     def create_frequency_path(self, phonemes: List[str]) -> FrequencyPath:
         """
         Create a complete FrequencyPath object from phoneme sequence.
-        
+
         Args:
             phonemes: List of Sanskrit phonemes
-            
+
         Returns:
             FrequencyPath object with vectors, smoothness score, and mapping
         """
@@ -320,7 +320,7 @@ class PhonemeFrequencyMapper:
 class TextToPhonemeConverter:
     """
     Converts text input to phoneme sequences for frequency mapping.
-    
+
     This is a simplified converter that handles basic text-to-phoneme conversion
     for demonstration purposes. In a production system, this would use more
     sophisticated phonetic analysis.
@@ -340,11 +340,11 @@ class TextToPhonemeConverter:
     def convert_text_to_phonemes(self, text: str, language_hint: Optional[str] = None) -> PhonemeSequence:
         """
         Convert text to phoneme sequence.
-        
+
         Args:
             text: Input text to convert
             language_hint: Optional language hint for better conversion
-            
+
         Returns:
             PhonemeSequence object
         """
@@ -377,7 +377,7 @@ class TextToPhonemeConverter:
 class PhonemeFrequencyPipeline:
     """
     Complete pipeline for text-to-frequency conversion.
-    
+
     This class combines text-to-phoneme conversion with phoneme-to-frequency
     mapping to provide a complete processing pipeline.
     """
@@ -385,7 +385,7 @@ class PhonemeFrequencyPipeline:
     def __init__(self, frequency_dim: int = 24, smoothness_weight: float = 0.1):
         """
         Initialize the complete pipeline.
-        
+
         Args:
             frequency_dim: Dimensionality of frequency vectors (K ∈ [16, 32])
             smoothness_weight: Weight for smoothness constraint enforcement
@@ -396,11 +396,11 @@ class PhonemeFrequencyPipeline:
     def process_text(self, text: str, language_hint: Optional[str] = None) -> FrequencyPath:
         """
         Process text through complete pipeline: text → phonemes → frequency path.
-        
+
         Args:
             text: Input text to process
             language_hint: Optional language hint for better conversion
-            
+
         Returns:
             FrequencyPath object representing the text in frequency space
         """
@@ -418,10 +418,10 @@ class PhonemeFrequencyPipeline:
     def validate_pipeline(self, text: str) -> bool:
         """
         Validate that the complete pipeline produces valid output.
-        
+
         Args:
             text: Test text to validate
-            
+
         Returns:
             True if pipeline produces valid FrequencyPath, False otherwise
         """

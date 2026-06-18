@@ -50,7 +50,7 @@ class TestMeshNode:
         assert receiver.phase != 1.0 or receiver.current_mu == 0.0
 
     def test_send_to_untrusted_is_ignored(self):
-        sender = MeshNode("sender")
+        MeshNode("sender")
         receiver = MeshNode("receiver")
         # No connection, so sender is untrusted
         signal = MeshSignal(

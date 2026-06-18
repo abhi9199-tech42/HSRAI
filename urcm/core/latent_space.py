@@ -15,7 +15,7 @@ class SemanticLatentSpace:
     def __init__(self, input_dim: int = 64, latent_dim: int = 16, mu_threshold_drift: float = 0.8):
         """
         Initialize the Latent Space manager.
-        
+
         Args:
             input_dim: Dimension of the Resonance Vector space.
             latent_dim: Dimension of the compressed Latent space.
@@ -95,7 +95,7 @@ class ReconstructionSystem:
     def perform_round_trip(self, state: ResonanceState) -> Tuple[np.ndarray, float, bool]:
         """
         Executes a full round trip projection and reconstruction.
-        
+
         Returns:
             - Reconstructed Vector (ndarray)
             - Reconstruction Loss (float)

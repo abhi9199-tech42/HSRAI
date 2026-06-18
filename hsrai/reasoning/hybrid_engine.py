@@ -24,7 +24,7 @@ class ReasoningPath:
 
 class HybridReasoningEngine:
     """
-    Orchestrates hybrid reasoning using structural graph traversal 
+    Orchestrates hybrid reasoning using structural graph traversal
     modulated by oscillatory dynamics.
     """
 
