@@ -1,4 +1,4 @@
-from .interfaces import Plugin, CompressionPlugin, ReasoningPlugin, OutputPlugin
+from .interfaces import CompressionPlugin, OutputPlugin, Plugin, ReasoningPlugin
 from .manager import PluginManager
 
 __all__ = [

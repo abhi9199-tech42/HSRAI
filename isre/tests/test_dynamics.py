@@ -1,5 +1,6 @@
-import pytest
 import numpy as np
+import pytest
+
 from isre.reasoning.dynamics import OscillatoryGate
 
 

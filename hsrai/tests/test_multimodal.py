@@ -1,5 +1,6 @@
-import pytest
-from hypothesis import given, strategies as st
+from hypothesis import given
+from hypothesis import strategies as st
+
 from hsrai.compression.multimodal import MultiModalProcessor
 from hsrai.core.models import SemanticPrimitive
 from hsrai.core.types import SemanticType
@@ -15,7 +16,7 @@ def voice_input_strategy(draw):
 # --- Tests ---
 
 class TestMultiModalProcessing:
-    
+
     def setup_method(self):
         self.processor = MultiModalProcessor()
 
@@ -23,7 +24,7 @@ class TestMultiModalProcessing:
     def test_text_processing_consistency(self, text):
         """Property 3: Cross-modal semantic consistency - Text"""
         primitive = self.processor.process_text(text)
-        
+
         assert isinstance(primitive, SemanticPrimitive)
         assert primitive.modality == "text"
         assert primitive.type == SemanticType.CONCEPT
@@ -36,7 +37,7 @@ class TestMultiModalProcessing:
         """Property 3: Cross-modal semantic consistency - Voice"""
         phonemes, source_text = input_data
         primitive = self.processor.process_voice(phonemes, source_text)
-        
+
         assert isinstance(primitive, SemanticPrimitive)
         assert primitive.modality == "voice"
         assert primitive.type == SemanticType.ACTION
@@ -48,7 +49,7 @@ class TestMultiModalProcessing:
     def test_behavior_processing_consistency(self, signal, intensity):
         """Property 3: Cross-modal semantic consistency - Behavior"""
         primitive = self.processor.process_behavior(signal, intensity)
-        
+
         assert isinstance(primitive, SemanticPrimitive)
         assert primitive.modality == "behavior"
         assert primitive.type == SemanticType.ATTRIBUTE
@@ -59,12 +60,12 @@ class TestMultiModalProcessing:
     def test_sensor_processing_consistency(self, sensor_id, value):
         """Property 3: Cross-modal semantic consistency - Sensor"""
         primitive = self.processor.process_sensor(sensor_id, value)
-        
+
         assert isinstance(primitive, SemanticPrimitive)
         assert primitive.modality == "sensor"
         assert primitive.type == SemanticType.ENTITY
         assert primitive.semantic_weight == 1.0
-        
+
         # Handle NaN comparison
         import math
         stored_value = primitive.compression_metadata["value"]

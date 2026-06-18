@@ -1,5 +1,7 @@
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel, Field
+
 
 class KnowledgeQueryResult(BaseModel):
     """
@@ -17,7 +19,7 @@ class KnowledgeQueryEngine:
     Requirement 4.1: Query external structured knowledge sources.
     Requirement 4.4: Separation between reasoning and knowledge.
     """
-    
+
     def __init__(self, schema_version: str = "1.0"):
         self.schema_version = schema_version
         # In a real system, this would connect to databases/APIs
@@ -37,7 +39,7 @@ class KnowledgeQueryEngine:
         import time
         concept_key = concept_key.lower()
         self.query_log.append({"concept": concept_key, "timestamp": time.time()})
-        
+
         if concept_key in self._cache:
             return self._cache[concept_key]
 

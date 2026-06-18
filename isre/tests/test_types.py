@@ -1,5 +1,4 @@
-import pytest
-from isre.types import IntentType, EdgeType, SemanticType
+from isre.types import EdgeType, IntentType, SemanticType
 
 
 class TestIntentType:

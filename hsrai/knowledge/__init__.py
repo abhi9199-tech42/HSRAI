@@ -1,5 +1,5 @@
-from .models import KnowledgeEntry, KnowledgeSourceType, KnowledgeGap
-from .query import KnowledgeQueryEngine, InMemoryKnowledgeBase
+from .models import KnowledgeEntry, KnowledgeGap, KnowledgeSourceType
+from .query import InMemoryKnowledgeBase, KnowledgeQueryEngine
 
 __all__ = [
     "KnowledgeEntry", "KnowledgeSourceType", "KnowledgeGap",

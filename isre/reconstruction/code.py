@@ -1,6 +1,6 @@
-from typing import Dict
-from .base import OutputReconstructor
 from ..models.reasoning import ReasoningDecision
+from .base import OutputReconstructor
+
 
 class CodeGenerator(OutputReconstructor):
     """
@@ -21,7 +21,7 @@ class CodeGenerator(OutputReconstructor):
                 code_snippet = self._to_code(prim.concept)
                 if code_snippet:
                     lines.append(code_snippet)
-        
+
         return "\n".join(lines)
 
     def _to_code(self, concept: str) -> str:

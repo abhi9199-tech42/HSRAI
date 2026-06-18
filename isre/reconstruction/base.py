@@ -1,13 +1,15 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict
+from typing import Any
+
 from ..models.reasoning import ReasoningDecision
+
 
 class OutputReconstructor(ABC):
     """
     Base class for transforming semantic reasoning decisions into specific output formats.
     Requirement 5.1: Convert semantic decisions into language, code, or actions.
     """
-    
+
     @abstractmethod
     def reconstruct(self, decision: ReasoningDecision) -> Any:
         """

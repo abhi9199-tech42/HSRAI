@@ -1,8 +1,8 @@
-import pytest
 import numpy as np
-from urcm.core.theory import URCMTheory, ResonantLearning
-from urcm.core.data_models import ResonanceState, AttractorState
+import pytest
 
+from urcm.core.data_models import AttractorState, ResonanceState
+from urcm.core.theory import ResonantLearning, URCMTheory
 
 # ---------------------------------------------------------------------------
 # Helpers

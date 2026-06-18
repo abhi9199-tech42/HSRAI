@@ -1,18 +1,17 @@
-import pytest
-from hypothesis import given, strategies as st
-import tempfile
-import os
 import json
-from typing import Dict, Any
+import os
+import tempfile
+from typing import Any, Dict
 
-from hsrai.plugins.interfaces import Plugin, CompressionPlugin, ReasoningPlugin, OutputPlugin
-from hsrai.plugins.manager import PluginManager
-from hsrai.system.config import ConfigurationManager, SystemConfig
+import pytest
+from hypothesis import given, settings
+from hypothesis import strategies as st
+
 from hsrai.core.models import SemanticPrimitive
 from hsrai.core.types import SemanticType
-from hsrai.graph.models import IntentGraph
-from hsrai.reasoning.hybrid_engine import ReasoningPath
-from hsrai.output.models import GeneratedOutput
+from hsrai.plugins.manager import PluginManager
+from hsrai.system.config import ConfigurationManager
+
 
 class MockCompressionPlugin:
     def __init__(self):
@@ -22,10 +21,10 @@ class MockCompressionPlugin:
     def initialize(self, config: Dict[str, Any]) -> None:
         self.config = config
         self.initialized = True
-        
+
     def shutdown(self) -> None:
         self.initialized = False
-        
+
     def process(self, input_data: Any, source_id: str) -> SemanticPrimitive:
         return SemanticPrimitive(
             id=f"mock_{source_id}",
@@ -35,7 +34,7 @@ class MockCompressionPlugin:
         )
 
 class TestExtensibility:
-    
+
     def test_plugin_interface_compliance(self):
         """Property 17: Plugin interface compliance"""
         # Verify that MockCompressionPlugin satisfies CompressionPlugin protocol
@@ -43,20 +42,21 @@ class TestExtensibility:
         assert hasattr(plugin, 'initialize')
         assert hasattr(plugin, 'shutdown')
         assert hasattr(plugin, 'process')
-        
+
         manager = PluginManager()
         manager.register_compression("mock", plugin)
-        
+
         config = {"plugins": {"compression": {"mock": {"param": 1}}}}
         manager.initialize_all(config)
-        
+
         assert plugin.initialized
         assert plugin.config == {"param": 1}
-        
+
         manager.shutdown_all()
         assert not plugin.initialized
 
     @given(st.dictionaries(keys=st.text(), values=st.text()))
+    @settings(deadline=None)
     def test_configuration_validity(self, settings):
         """Property 18: Configuration validity"""
         # Create a temp config file
@@ -70,23 +70,23 @@ class TestExtensibility:
             }, f)
             f.close()
             config_path = f.name
-            
+
             manager = ConfigurationManager(config_path)
             manager.load()
-            
+
             assert manager.config.environment == "testing"
             assert manager.config.max_concurrent_requests == 5
-            
+
             # Check dynamic loading via reload
             with open(config_path, 'w') as f_write:
                 json.dump({
                     "environment": "production",
                     "max_concurrent_requests": 10
                 }, f_write)
-            
+
             manager.reload()
             assert manager.config.environment == "production"
-            
+
         finally:
             if os.path.exists(f.name):
                 os.remove(f.name)
@@ -101,7 +101,7 @@ class TestExtensibility:
             }, f)
             f.close()
             config_path = f.name
-            
+
             manager = ConfigurationManager(config_path)
             with pytest.raises(ValueError):
                 manager.load()

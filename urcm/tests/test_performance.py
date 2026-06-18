@@ -1,8 +1,7 @@
-import pytest
 import numpy as np
+import pytest
 
-from urcm.core.performance import OptimizedPhonemeSet, CompressionMonitor
-
+from urcm.core.performance import CompressionMonitor, OptimizedPhonemeSet
 
 # ── OptimizedPhonemeSet ─────────────────────────────────────────────
 

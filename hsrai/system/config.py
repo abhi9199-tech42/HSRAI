@@ -1,7 +1,8 @@
-from typing import Dict, Any, List, Callable
 import json
 import os
 from dataclasses import dataclass, field
+from typing import Any, Callable, Dict, List
+
 
 @dataclass
 class SystemConfig:
@@ -11,7 +12,7 @@ class SystemConfig:
     max_concurrent_requests: int = 10
     timeout_ms: int = 5000
     plugins: Dict[str, Dict[str, Any]] = field(default_factory=dict)
-    
+
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'SystemConfig':
         """Create a SystemConfig from a dictionary, ignoring unknown keys."""
@@ -47,6 +48,12 @@ class ConfigurationManager:
             raise ValueError(f"Invalid environment: {config['environment']}")
         if "max_concurrent_requests" in config and config["max_concurrent_requests"] < 1:
             raise ValueError("max_concurrent_requests must be positive")
+        if "timeout_ms" in config and config["timeout_ms"] < 0:
+            raise ValueError("timeout_ms must be non-negative")
+        if "debug" in config and not isinstance(config["debug"], bool):
+            raise ValueError("debug must be a boolean")
+        if "plugins" in config and not isinstance(config["plugins"], dict):
+            raise ValueError("plugins must be a dictionary")
 
     def get(self, key: str, default: Any = None) -> Any:
         """Retrieve a raw config value by key."""
@@ -60,7 +67,7 @@ class ConfigurationManager:
         """Notify all registered subscribers of the current config."""
         for callback in self.subscribers:
             callback(self.config)
-            
+
     def reload(self):
         """Reload configuration from disk."""
         self.load()

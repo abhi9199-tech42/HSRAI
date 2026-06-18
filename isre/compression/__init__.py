@@ -1,6 +1,6 @@
 from .base import SemanticCompressor
-from .text import ConceptMapper
-from .speech import PhonemeExtractor
 from .multimodal import MultimodalProcessor
+from .speech import PhonemeExtractor
+from .text import ConceptMapper
 
 __all__ = ["SemanticCompressor", "ConceptMapper", "PhonemeExtractor", "MultimodalProcessor"]

@@ -5,12 +5,14 @@ This module implements the core phoneme-frequency mapping functionality that con
 Sanskrit-derived phonemes into continuous frequency vectors in K-dimensional space.
 """
 
-import numpy as np
-from typing import List, Set, Dict, Tuple, Optional
-from dataclasses import dataclass
-import re
+import logging
+from typing import Dict, List, Optional
 
-from .data_models import PhonemeSequence, FrequencyPath
+import numpy as np
+
+logger = logging.getLogger(__name__)
+
+from hsrai.common.phoneme import FrequencyPath, PhonemeSequence
 
 
 class PhonemeFrequencyMapper:
@@ -21,12 +23,12 @@ class PhonemeFrequencyMapper:
     frequency representations, enforcing smoothness constraints and maintaining
     consistency across mappings.
     """
-    
+
     # Sanskrit-derived phoneme set for complete articulatory coverage
     SANSKRIT_PHONEMES = {
         # Vowels (स्वर)
         'a', 'ā', 'i', 'ī', 'u', 'ū', 'ṛ', 'ṝ', 'ḷ', 'ḹ', 'e', 'ai', 'o', 'au',
-        
+
         # Consonants - Stops (स्पर्श)
         # Velar (कण्ठ्य)
         'k', 'kh', 'g', 'gh', 'ṅ',
@@ -38,17 +40,17 @@ class PhonemeFrequencyMapper:
         't', 'th', 'd', 'dh', 'n',
         # Labial (ओष्ठ्य)
         'p', 'ph', 'b', 'bh', 'm',
-        
+
         # Semivowels (अन्तःस्थ)
         'y', 'r', 'l', 'v',
-        
+
         # Sibilants (ऊष्म)
         'ś', 'ṣ', 's', 'h',
-        
+
         # Additional phonemes for broader coverage
         'x', 'z', 'f', 'w'  # For non-Sanskrit languages
     }
-    
+
     def __init__(self, frequency_dim: int = 24, smoothness_weight: float = 0.1):
         """
         Initialize the phoneme-frequency mapper.
@@ -59,34 +61,34 @@ class PhonemeFrequencyMapper:
         """
         if not (16 <= frequency_dim <= 32):
             raise ValueError("Frequency dimension K must be in range [16, 32]")
-        
+
         self.phoneme_space = self.SANSKRIT_PHONEMES.copy()
         self.K = frequency_dim
         self.smoothness_weight = smoothness_weight
-        
+
         # Initialize phoneme-to-frequency mapping
         self._initialize_phoneme_vectors()
-        
+
         # Articulatory feature matrix for smoothness constraints
         self._initialize_articulatory_features()
-    
+
     def _initialize_phoneme_vectors(self):
         """Initialize deterministic phoneme-to-frequency vector mappings."""
         # Create deterministic mapping based on phoneme characteristics
         self.phoneme_vectors = {}
-        
+
         # Use a deterministic seed for consistent mappings
         rng = np.random.RandomState(42)
-        
+
         # Group phonemes by articulatory features for better organization
         phoneme_groups = self._group_phonemes_by_features()
-        
+
         # Generate vectors with structured initialization
         for group_name, phonemes in phoneme_groups.items():
             # Each group gets a base vector in a different region of frequency space
             group_base = rng.uniform(-1, 1, self.K)
             group_base = group_base / np.linalg.norm(group_base)  # Normalize
-            
+
             for i, phoneme in enumerate(phonemes):
                 # Add small perturbations within the group
                 perturbation = rng.uniform(-0.3, 0.3, self.K)
@@ -94,7 +96,7 @@ class PhonemeFrequencyMapper:
                 # Normalize to unit sphere for consistency
                 vector = vector / np.linalg.norm(vector)
                 self.phoneme_vectors[phoneme] = vector
-    
+
     def _group_phonemes_by_features(self) -> Dict[str, List[str]]:
         """Group phonemes by articulatory features for structured mapping."""
         groups = {
@@ -108,22 +110,22 @@ class PhonemeFrequencyMapper:
             'sibilants': ['ś', 'ṣ', 's', 'h'],
             'additional': ['x', 'z', 'f', 'w']
         }
-        
+
         # Filter to only include phonemes that exist in our set
         filtered_groups = {}
         for group_name, phonemes in groups.items():
             filtered_phonemes = [p for p in phonemes if p in self.phoneme_space]
             if filtered_phonemes:
                 filtered_groups[group_name] = filtered_phonemes
-        
+
         return filtered_groups
-    
+
     def _initialize_articulatory_features(self):
         """Initialize articulatory feature matrix for smoothness calculations."""
         # Simplified articulatory features for smoothness constraints
         # Features: [vowel, voiced, aspirated, nasal, retroflex, palatal, velar, dental, labial]
         self.articulatory_features = {}
-        
+
         # Define features for each phoneme (simplified)
         feature_definitions = {
             # Vowels
@@ -134,49 +136,49 @@ class PhonemeFrequencyMapper:
             'ai': [1, 1, 0, 0, 0, 1, 0, 0, 0], 'au': [1, 1, 0, 0, 0, 0, 0, 0, 1],
             'ṛ': [1, 1, 0, 0, 1, 0, 0, 0, 0], 'ṝ': [1, 1, 0, 0, 1, 0, 0, 0, 0],
             'ḷ': [1, 1, 0, 0, 1, 0, 0, 0, 0], 'ḹ': [1, 1, 0, 0, 1, 0, 0, 0, 0],
-            
+
             # Velars
             'k': [0, 0, 0, 0, 0, 0, 1, 0, 0], 'kh': [0, 0, 1, 0, 0, 0, 1, 0, 0],
             'g': [0, 1, 0, 0, 0, 0, 1, 0, 0], 'gh': [0, 1, 1, 0, 0, 0, 1, 0, 0],
             'ṅ': [0, 1, 0, 1, 0, 0, 1, 0, 0],
-            
+
             # Palatals
             'c': [0, 0, 0, 0, 0, 1, 0, 0, 0], 'ch': [0, 0, 1, 0, 0, 1, 0, 0, 0],
             'j': [0, 1, 0, 0, 0, 1, 0, 0, 0], 'jh': [0, 1, 1, 0, 0, 1, 0, 0, 0],
             'ñ': [0, 1, 0, 1, 0, 1, 0, 0, 0],
-            
+
             # Retroflexes
             'ṭ': [0, 0, 0, 0, 1, 0, 0, 0, 0], 'ṭh': [0, 0, 1, 0, 1, 0, 0, 0, 0],
             'ḍ': [0, 1, 0, 0, 1, 0, 0, 0, 0], 'ḍh': [0, 1, 1, 0, 1, 0, 0, 0, 0],
             'ṇ': [0, 1, 0, 1, 1, 0, 0, 0, 0],
-            
+
             # Dentals
             't': [0, 0, 0, 0, 0, 0, 0, 1, 0], 'th': [0, 0, 1, 0, 0, 0, 0, 1, 0],
             'd': [0, 1, 0, 0, 0, 0, 0, 1, 0], 'dh': [0, 1, 1, 0, 0, 0, 0, 1, 0],
             'n': [0, 1, 0, 1, 0, 0, 0, 1, 0],
-            
+
             # Labials
             'p': [0, 0, 0, 0, 0, 0, 0, 0, 1], 'ph': [0, 0, 1, 0, 0, 0, 0, 0, 1],
             'b': [0, 1, 0, 0, 0, 0, 0, 0, 1], 'bh': [0, 1, 1, 0, 0, 0, 0, 0, 1],
             'm': [0, 1, 0, 1, 0, 0, 0, 0, 1],
-            
+
             # Semivowels
             'y': [0, 1, 0, 0, 0, 1, 0, 0, 0], 'r': [0, 1, 0, 0, 1, 0, 0, 0, 0],
             'l': [0, 1, 0, 0, 0, 0, 0, 1, 0], 'v': [0, 1, 0, 0, 0, 0, 0, 0, 1],
-            
+
             # Sibilants
             'ś': [0, 0, 0, 0, 0, 1, 0, 0, 0], 'ṣ': [0, 0, 0, 0, 1, 0, 0, 0, 0],
             's': [0, 0, 0, 0, 0, 0, 0, 1, 0], 'h': [0, 1, 1, 0, 0, 0, 1, 0, 0],
-            
+
             # Additional
             'x': [0, 0, 0, 0, 0, 0, 1, 0, 0], 'z': [0, 1, 0, 0, 0, 0, 0, 1, 0],
             'f': [0, 0, 0, 0, 0, 0, 0, 0, 1], 'w': [0, 1, 0, 0, 0, 0, 0, 0, 1]
         }
-        
+
         for phoneme, features in feature_definitions.items():
             if phoneme in self.phoneme_space:
                 self.articulatory_features[phoneme] = np.array(features, dtype=float)
-    
+
     def map_phoneme(self, phoneme: str) -> np.ndarray:
         """
         Map single phoneme to frequency vector.
@@ -192,9 +194,9 @@ class PhonemeFrequencyMapper:
         """
         if phoneme not in self.phoneme_space:
             raise ValueError(f"Phoneme '{phoneme}' not in Sanskrit phoneme set")
-        
+
         return self.phoneme_vectors[phoneme].copy()
-    
+
     def map_sequence(self, phonemes: List[str]) -> np.ndarray:
         """
         Map phoneme sequence to frequency path.
@@ -210,21 +212,21 @@ class PhonemeFrequencyMapper:
         """
         if not phonemes:
             raise ValueError("Phoneme sequence cannot be empty")
-        
+
         # Map each phoneme to its frequency vector
         vectors = []
         for phoneme in phonemes:
             vector = self.map_phoneme(phoneme)
             vectors.append(vector)
-        
+
         frequency_path = np.array(vectors)
-        
+
         # Apply smoothness constraints if sequence has multiple phonemes
         if len(phonemes) > 1:
             frequency_path = self.enforce_smoothness(frequency_path)
-        
+
         return frequency_path
-    
+
     def enforce_smoothness(self, path: np.ndarray) -> np.ndarray:
         """
         Apply smoothness constraints to frequency path.
@@ -240,9 +242,9 @@ class PhonemeFrequencyMapper:
         """
         if path.shape[0] <= 1:
             return path.copy()
-        
+
         smoothed_path = path.copy()
-        
+
         # Apply iterative smoothing
         for iteration in range(3):  # Limited iterations to prevent over-smoothing
             for i in range(1, len(smoothed_path) - 1):
@@ -250,20 +252,20 @@ class PhonemeFrequencyMapper:
                 prev_vec = smoothed_path[i - 1]
                 curr_vec = smoothed_path[i]
                 next_vec = smoothed_path[i + 1]
-                
+
                 # Smoothing: move current vector towards average of neighbors
                 neighbor_avg = (prev_vec + next_vec) / 2
                 adjustment = (neighbor_avg - curr_vec) * self.smoothness_weight
-                
+
                 # Apply adjustment while preserving vector magnitude
                 new_vec = curr_vec + adjustment
                 # Normalize to maintain consistent magnitude
                 new_vec = new_vec / np.linalg.norm(new_vec) * np.linalg.norm(curr_vec)
-                
+
                 smoothed_path[i] = new_vec
-        
+
         return smoothed_path
-    
+
     def calculate_smoothness_score(self, path: np.ndarray) -> float:
         """
         Calculate smoothness score for a frequency path.
@@ -276,16 +278,16 @@ class PhonemeFrequencyMapper:
         """
         if path.shape[0] <= 1:
             return 0.0
-        
+
         # Calculate pairwise distances between adjacent vectors
         diffs = np.diff(path, axis=0)
         distances = np.linalg.norm(diffs, axis=1)
-        
+
         # Smoothness score is the average distance between adjacent vectors
         smoothness_score = np.mean(distances)
-        
+
         return float(smoothness_score)
-    
+
     def create_frequency_path(self, phonemes: List[str]) -> FrequencyPath:
         """
         Create a complete FrequencyPath object from phoneme sequence.
@@ -298,16 +300,16 @@ class PhonemeFrequencyMapper:
         """
         if not phonemes:
             raise ValueError("Phoneme sequence cannot be empty")
-        
+
         # Map phonemes to frequency vectors
         vectors = self.map_sequence(phonemes)
-        
+
         # Calculate smoothness score
         smoothness_score = self.calculate_smoothness_score(vectors)
-        
+
         # Create phoneme mapping
         phoneme_mapping = [(phoneme, i) for i, phoneme in enumerate(phonemes)]
-        
+
         return FrequencyPath(
             vectors=vectors,
             smoothness_score=smoothness_score,
@@ -323,7 +325,7 @@ class TextToPhonemeConverter:
     for demonstration purposes. In a production system, this would use more
     sophisticated phonetic analysis.
     """
-    
+
     def __init__(self):
         """Initialize the text-to-phoneme converter."""
         # Simple mapping for common English letters to approximate Sanskrit phonemes
@@ -334,7 +336,7 @@ class TextToPhonemeConverter:
             'n': 'n', 'p': 'p', 'r': 'r', 's': 's', 't': 't',
             'v': 'v', 'w': 'w', 'x': 'x', 'y': 'y', 'z': 'z'
         }
-    
+
     def convert_text_to_phonemes(self, text: str, language_hint: Optional[str] = None) -> PhonemeSequence:
         """
         Convert text to phoneme sequence.
@@ -348,11 +350,11 @@ class TextToPhonemeConverter:
         """
         if not text or not text.strip():
             raise ValueError("Input text cannot be empty")
-        
+
         # Simple conversion: normalize and map characters
         normalized_text = text.lower().strip()
         phonemes = []
-        
+
         for char in normalized_text:
             if char.isalpha() and char in self.letter_to_phoneme:
                 phonemes.append(self.letter_to_phoneme[char])
@@ -360,11 +362,11 @@ class TextToPhonemeConverter:
                 # Add a brief pause phoneme for spaces (using 'a' as neutral)
                 if phonemes and phonemes[-1] != 'a':
                     phonemes.append('a')
-        
+
         if not phonemes:
             # Fallback to single neutral phoneme
             phonemes = ['a']
-        
+
         return PhonemeSequence(
             phonemes=phonemes,
             source_text=text,
@@ -379,7 +381,7 @@ class PhonemeFrequencyPipeline:
     This class combines text-to-phoneme conversion with phoneme-to-frequency
     mapping to provide a complete processing pipeline.
     """
-    
+
     def __init__(self, frequency_dim: int = 24, smoothness_weight: float = 0.1):
         """
         Initialize the complete pipeline.
@@ -390,7 +392,7 @@ class PhonemeFrequencyPipeline:
         """
         self.text_converter = TextToPhonemeConverter()
         self.frequency_mapper = PhonemeFrequencyMapper(frequency_dim, smoothness_weight)
-    
+
     def process_text(self, text: str, language_hint: Optional[str] = None) -> FrequencyPath:
         """
         Process text through complete pipeline: text → phonemes → frequency path.
@@ -404,15 +406,15 @@ class PhonemeFrequencyPipeline:
         """
         if not text or not text.strip():
             raise ValueError("Input text cannot be empty")
-        
+
         # Convert text to phonemes
         phoneme_sequence = self.text_converter.convert_text_to_phonemes(text, language_hint)
-        
+
         # Convert phonemes to frequency path
         frequency_path = self.frequency_mapper.create_frequency_path(phoneme_sequence.phonemes)
-        
+
         return frequency_path
-    
+
     def validate_pipeline(self, text: str) -> bool:
         """
         Validate that the complete pipeline produces valid output.
@@ -427,5 +429,6 @@ class PhonemeFrequencyPipeline:
             frequency_path = self.process_text(text)
             from .validation import DataValidation
             return DataValidation.validate_frequency_path(frequency_path)
-        except Exception:
+        except Exception as e:
+            logger.debug("Text validation failed: %s", e)
             return False

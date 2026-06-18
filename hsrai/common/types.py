@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class IntentType(Enum):
     GOAL = "goal"
     CONTEXT = "context"

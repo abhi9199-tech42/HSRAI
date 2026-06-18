@@ -1,8 +1,7 @@
 import pytest
-import numpy as np
 
-from urcm.core.system import URCMSystem
 from urcm.core.data_models import ReasoningPath
+from urcm.core.system import URCMSystem
 
 
 class TestURCMSystem:

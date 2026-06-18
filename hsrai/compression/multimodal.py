@@ -1,28 +1,28 @@
-from typing import List, Dict, Any, Union
-import numpy as np
 from datetime import datetime
+from typing import Any, Dict, List
 
+from hsrai.compression.mapper import PhonemeFrequencyMapper, PhonemeSequence
 from hsrai.core.models import SemanticPrimitive
 from hsrai.core.types import SemanticType
 from hsrai.core.utils import deterministic_id
-from hsrai.compression.mapper import PhonemeFrequencyMapper, PhonemeSequence
+
 
 class MultiModalProcessor:
     """
     Unified processor for handling multi-modal inputs (text, voice, behavior, sensor)
     and converting them into standard SemanticPrimitives.
     """
-    
+
     def __init__(self, phoneme_mapper: PhonemeFrequencyMapper = None):
         self.phoneme_mapper = phoneme_mapper or PhonemeFrequencyMapper()
-        
+
     def process_text(self, text: str, source_id: str = "user") -> SemanticPrimitive:
         """
         Process raw text input into a SemanticPrimitive.
         """
         # In a full implementation, this would involve NLP/NER.
         # Here we perform basic extraction.
-        
+
         # Deterministic ID generation
         id_data = {
             "type": SemanticType.CONCEPT.value,
@@ -32,7 +32,7 @@ class MultiModalProcessor:
             "source_length": len(text)
         }
         sem_id = f"text_{deterministic_id(id_data)[:8]}"
-        
+
         return SemanticPrimitive(
             id=sem_id,
             concept=text[:50], # Truncate for concept label
@@ -45,19 +45,19 @@ class MultiModalProcessor:
                 "timestamp": datetime.now().isoformat()
             }
         )
-        
+
     def process_voice(self, phonemes: List[str], source_text: str = "", source_id: str = "user") -> SemanticPrimitive:
         """
         Process phoneme sequence from voice input.
         """
         sequence = PhonemeSequence(phonemes=phonemes, source_text=source_text or "voice_input")
         freq_path = self.phoneme_mapper.map_sequence(sequence)
-        
+
         # Calculate semantic density based on path smoothness
-        # Smoother paths (lower score) might indicate higher coherence? 
+        # Smoother paths (lower score) might indicate higher coherence?
         # For now, we normalize smoothness to a weight.
         normalized_weight = 1.0 / (1.0 + freq_path.smoothness_score)
-        
+
         # Deterministic ID generation
         id_data = {
             "type": SemanticType.ACTION.value,
@@ -67,7 +67,7 @@ class MultiModalProcessor:
             "phonemes": phonemes
         }
         sem_id = f"voice_{deterministic_id(id_data)[:8]}"
-        
+
         return SemanticPrimitive(
             id=sem_id,
             concept=source_text[:50] or "voice_command",
@@ -82,7 +82,7 @@ class MultiModalProcessor:
                 "timestamp": datetime.now().isoformat()
             }
         )
-        
+
     def process_behavior(self, signal_type: str, intensity: float, context: Dict[str, Any] = None) -> SemanticPrimitive:
         """
         Process behavioral signals (e.g., gaze, gesture, tone).

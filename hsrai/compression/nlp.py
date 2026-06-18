@@ -5,10 +5,12 @@ Converts raw text into high-dimensional semantic embeddings that capture
 meaning beyond surface-level text matching.
 """
 
-import numpy as np
-from typing import List, Optional, Dict, Any
-from datetime import datetime
+import hashlib
 import logging
+from datetime import datetime
+from typing import Dict, List
+
+import numpy as np
 
 from hsrai.core.models import SemanticPrimitive
 from hsrai.core.types import SemanticType
@@ -27,7 +29,7 @@ class NLPCompressor:
     This replaces the trivial text[:50] truncation with actual
     semantic understanding.
     """
-    
+
     def __init__(self, model_name: str = "all-MiniLM-L6-v2", device: str = "cpu"):
         """
         Initialize the NLP compressor.
@@ -40,7 +42,7 @@ class NLPCompressor:
         self.device = device
         self._model = None
         self._embedding_dim = None
-        
+
     def _load_model(self):
         """Lazy load the sentence-transformers model."""
         if self._model is not None:
@@ -55,12 +57,12 @@ class NLPCompressor:
                 "sentence-transformers is required for NLP compression. "
                 "Install with: pip install sentence-transformers"
             )
-    
+
     @property
     def embedding_dim(self) -> int:
         self._load_model()
         return self._embedding_dim
-    
+
     def embed(self, text: str) -> np.ndarray:
         """
         Convert text to a semantic embedding vector.
@@ -74,7 +76,7 @@ class NLPCompressor:
         self._load_model()
         embedding = self._model.encode(text, normalize_embeddings=True)
         return embedding
-    
+
     def embed_batch(self, texts: List[str]) -> np.ndarray:
         """
         Convert multiple texts to embeddings.
@@ -88,7 +90,7 @@ class NLPCompressor:
         self._load_model()
         embeddings = self._model.encode(texts, normalize_embeddings=True, batch_size=32)
         return embeddings
-    
+
     def similarity(self, text_a: str, text_b: str) -> float:
         """
         Compute cosine similarity between two texts.
@@ -103,7 +105,7 @@ class NLPCompressor:
         emb_a = self.embed(text_a)
         emb_b = self.embed(text_b)
         return float(np.dot(emb_a, emb_b))
-    
+
     def classify_intent(self, text: str) -> Dict[str, float]:
         """
         Classify the intent of a text using semantic similarity to
@@ -118,18 +120,18 @@ class NLPCompressor:
             "statement": "The sky is blue today.",
             "request": "Could you please help me with this?",
         }
-        
+
         text_emb = self.embed(text)
         scores = {}
         for label, example in intent_labels.items():
             example_emb = self.embed(example)
             scores[label] = float(np.dot(text_emb, example_emb))
-        
+
         # Normalize to probabilities via softmax
         exp_scores = {k: np.exp(v) for k, v in scores.items()}
         total = sum(exp_scores.values())
         return {k: v / total for k, v in exp_scores.items()}
-    
+
     def extract_entities(self, text: str) -> List[Dict[str, str]]:
         """
         Simple entity extraction using pattern matching.
@@ -140,25 +142,25 @@ class NLPCompressor:
         """
         import re
         entities = []
-        
+
         # Extract numbers (potential amounts, IDs)
         for match in re.finditer(r'\b\d+\.?\d*\b', text):
             entities.append({"text": match.group(), "label": "NUMBER"})
-        
+
         # Extract capitalized words (potential names, places)
         for match in re.finditer(r'\b[A-Z][a-z]+\b', text):
             entities.append({"text": match.group(), "label": "ENTITY"})
-        
+
         # Extract dates
         for match in re.finditer(r'\b\d{4}-\d{2}-\d{2}\b', text):
             entities.append({"text": match.group(), "label": "DATE"})
-        
+
         # Extract email addresses
         for match in re.finditer(r'\b[\w.-]+@[\w.-]+\.\w+\b', text):
             entities.append({"text": match.group(), "label": "EMAIL"})
-        
+
         return entities
-    
+
     def compress_to_primitive(self, text: str, source_id: str = "user") -> SemanticPrimitive:
         """
         Full compression pipeline: text → embedding → SemanticPrimitive.
@@ -169,20 +171,20 @@ class NLPCompressor:
         embedding = self.embed(text)
         entities = self.extract_entities(text)
         intents = self.classify_intent(text)
-        
+
         # Deterministic ID
         id_data = {
             "type": SemanticType.CONCEPT.value,
             "concept": text[:100],
             "modality": "text",
             "source_id": source_id,
-            "embedding_hash": hash(embedding.tobytes()),
+            "embedding_hash": hashlib.sha256(embedding.tobytes()).hexdigest(),
         }
         sem_id = f"nlp_{deterministic_id(id_data)[:12]}"
-        
+
         # Determine primary intent
         primary_intent = max(intents, key=intents.get)
-        
+
         # Map intent to SemanticType
         intent_type_map = {
             "question": SemanticType.CONCEPT,
@@ -190,7 +192,7 @@ class NLPCompressor:
             "statement": SemanticType.CONCEPT,
             "request": SemanticType.ACTION,
         }
-        
+
         return SemanticPrimitive(
             id=sem_id,
             concept=text[:100],

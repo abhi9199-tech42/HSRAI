@@ -273,7 +273,20 @@ class MedicalDiagnosisEngine:
         if len(nodes) < 2:
             return None
         
-        engine.find_paths(nodes[0].id, nodes[-1].id)
+        goal_node = None
+        context_node = None
+        for node in nodes:
+            if node.type == IntentType.GOAL:
+                goal_node = node
+            elif context_node is None:
+                context_node = node
+        
+        if goal_node is None:
+            goal_node = nodes[-1]
+        if context_node is None:
+            context_node = nodes[0]
+        
+        engine.find_paths(context_node.id, goal_node.id)
         
         for _ in range(30):
             path = engine.step(dt=0.1)

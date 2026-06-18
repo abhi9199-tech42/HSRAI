@@ -1,7 +1,8 @@
 import hashlib
 import json
-from typing import Dict, Any, Union
 from enum import Enum
+from typing import Any, Dict
+
 
 def deterministic_id(data: Dict[str, Any]) -> str:
     """
@@ -18,9 +19,9 @@ def deterministic_id(data: Dict[str, Any]) -> str:
 
     # Use sort_keys=True and a consistent separator for reproducibility
     canonical = json.dumps(
-        data, 
+        data,
         default=_default_serializer,
-        sort_keys=True, 
+        sort_keys=True,
         separators=(",", ":")
     )
     return hashlib.sha256(canonical.encode()).hexdigest()

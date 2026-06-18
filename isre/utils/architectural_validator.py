@@ -1,13 +1,14 @@
 import ast
 import os
-from typing import List, Dict, Set
+from typing import List, Set
+
 
 class ArchitecturalValidator:
     """
     Validates architectural constraints and layer separation.
     Requirement 4.4, 5.4.
     """
-    
+
     def __init__(self, root_dir: str):
         self.root_dir = root_dir
         # Defined legal internal dependencies (Simplified)
@@ -31,7 +32,7 @@ class ArchitecturalValidator:
                     file_path = os.path.join(root, file)
                     rel_path = os.path.relpath(file_path, self.root_dir).replace(os.sep, ".")
                     current_pkg = f"isre.{rel_path.split('.')[0]}"
-                    
+
                     if current_pkg in self.forbidden_deps:
                         imports = self._get_imports(file_path)
                         forbidden = self.forbidden_deps[current_pkg]
@@ -48,7 +49,7 @@ class ArchitecturalValidator:
                 tree = ast.parse(f.read())
             except SyntaxError:
                 return set()
-                
+
             for node in ast.walk(tree):
                 if isinstance(node, ast.Import):
                     for n in node.names:

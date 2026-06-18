@@ -1,13 +1,15 @@
-import time
-import psutil # Assuming psutil is available or we mock it
 import os
+import time
+
+import psutil  # Assuming psutil is available or we mock it
+
 
 class ResourceMonitor:
     """
     Monitors system resources to support graceful degradation.
     Requirement 7.4, 7.5.
     """
-    
+
     def __init__(self, memory_threshold_mb: float = 1000.0):
         self.memory_threshold = memory_threshold_mb
         self.process = psutil.Process(os.getpid())

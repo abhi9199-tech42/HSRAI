@@ -1,12 +1,10 @@
-import pytest
-import numpy as np
 import time
 
+import numpy as np
+
+from hsrai.common.phoneme import FrequencyPath, PhonemeSequence
+from urcm.core.data_models import AttractorState, MeshSignal, ReasoningPath, ResonanceState
 from urcm.core.validation import DataValidation
-from urcm.core.data_models import (
-    ResonanceState, AttractorState, ReasoningPath, MeshSignal
-)
-from hsrai.common.phoneme import PhonemeSequence, FrequencyPath
 
 
 def _make_resonance(vector=None, mu=1.0, rho=1.0, chi=1.0, phase=1.0):

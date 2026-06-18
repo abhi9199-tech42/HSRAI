@@ -1,7 +1,10 @@
+from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel, Field
-from typing import List, Dict, Any, Optional
-from hsrai.common.types import IntentType, EdgeType
+
 from hsrai.common.models import SemanticPrimitive
+from hsrai.common.types import EdgeType, IntentType
+
 
 class IntentNode(BaseModel):
     """

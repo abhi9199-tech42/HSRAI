@@ -1,10 +1,13 @@
 import argparse
 import asyncio
 import json
+import logging
 import os
 import subprocess
 import sys
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 __version__ = "1.0.0"
 
@@ -19,14 +22,15 @@ def _get_version() -> str:
             for line in text.splitlines():
                 if line.strip().startswith("version"):
                     return line.split("=", 1)[1].strip().strip('"')
-    except Exception:
+    except Exception as e:
+        logger.debug("Could not read pyproject.toml version: %s", e)
         pass
     return __version__
 
 
 def cmd_process(args):
-    from hsrai.system.controller import SystemController
     from hsrai.output.models import GeneratedOutput
+    from hsrai.system.controller import SystemController
 
     controller = SystemController()
     output: GeneratedOutput = asyncio.run(controller.process_request(args.query))
@@ -101,8 +105,15 @@ def cmd_config(args):
 
 
 def cmd_test(args):
+    import os
+    test_dirs = []
+    for d in ["hsrai/tests/", "urcm/tests/", "isre/tests/"]:
+        if os.path.isdir(d):
+            test_dirs.append(d)
+    if not test_dirs:
+        test_dirs = ["hsrai/tests/"]
     result = subprocess.run(
-        [sys.executable, "-m", "pytest", "hsrai/tests/", "urcm/tests/", "isre/tests/", "-q"],
+        [sys.executable, "-m", "pytest"] + test_dirs + ["-q"],
     )
     sys.exit(result.returncode)
 

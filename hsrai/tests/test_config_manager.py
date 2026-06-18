@@ -1,9 +1,10 @@
-import pytest
 import json
-import tempfile
 import os
+import tempfile
 
-from hsrai.system.config import SystemConfig, ConfigurationManager
+import pytest
+
+from hsrai.system.config import ConfigurationManager, SystemConfig
 
 
 class TestSystemConfig:

@@ -1,8 +1,9 @@
-import numpy as np
 import time
-import pytest
+
+import numpy as np
+
 from urcm.core.convergence_engine import MuConvergenceEngine
-from urcm.core.data_models import ResonanceState, ReasoningPath
+from urcm.core.data_models import ReasoningPath, ResonanceState
 from urcm.core.theory import URCMTheory
 
 

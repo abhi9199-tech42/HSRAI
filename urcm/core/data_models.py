@@ -8,10 +8,9 @@ PhonemeSequence and FrequencyPath are imported from hsrai.common.phoneme.
 """
 
 from dataclasses import dataclass
-from typing import List, Optional, Tuple, Dict, Any
-import numpy as np
+from typing import List, Optional
 
-from hsrai.common.phoneme import PhonemeSequence, FrequencyPath
+import numpy as np
 
 
 @dataclass
@@ -24,7 +23,7 @@ class ResonanceState:
     stability_score: float
     oscillation_phase: float
     timestamp: float
-    
+
     def __post_init__(self):
         if self.resonance_vector.ndim != 1:
             raise ValueError("Resonance vector must be 1-dimensional")
@@ -33,7 +32,11 @@ class ResonanceState:
         if self.timestamp < 0:
             raise ValueError("Timestamp must be non-negative")
         # Ensure mu = rho / chi (with epsilon for stability)
-        calculated_mu = self.rho_density / (self.chi_cost + 1e-9)
+        # Use relative epsilon to avoid domination for small chi
+        chi_eff = self.chi_cost + 1e-9
+        if abs(self.chi_cost) < 1e-6:
+            chi_eff = max(abs(self.chi_cost), 1e-6)
+        calculated_mu = self.rho_density / chi_eff
         if not np.isclose(self.mu_value, calculated_mu, rtol=1e-3):
             raise ValueError(
                 f"mu_value ({self.mu_value:.6f}) does not match "
@@ -49,7 +52,7 @@ class AttractorState:
     eigenvalues: np.ndarray
     stability_type: str  # "stable", "unstable", "saddle"
     semantic_label: Optional[str] = None
-    
+
     def __post_init__(self):
         if self.phase_pattern.ndim != 1:
             raise ValueError("Phase pattern must be 1-dimensional")
@@ -68,7 +71,7 @@ class ReasoningPath:
     mu_trajectory: List[float]
     convergence_achieved: bool
     termination_reason: str
-    
+
     def __post_init__(self):
         if not self.intermediate_states:
             self.intermediate_states = []
@@ -86,7 +89,7 @@ class MeshSignal:
     phase_alignment: float
     timestamp: float
     signal_type: str  # "sync", "convergence", "error"
-    
+
     def __post_init__(self):
         if not self.sender_id:
             raise ValueError("Sender ID cannot be empty")

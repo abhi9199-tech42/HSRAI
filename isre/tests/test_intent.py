@@ -1,7 +1,8 @@
 import pytest
-from isre.models.intent import IntentNode, IntentEdge, IntentGraph
-from hsrai.common.types import IntentType, EdgeType, SemanticType
+
 from hsrai.common.models import SemanticPrimitive
+from hsrai.common.types import EdgeType, IntentType, SemanticType
+from isre.models.intent import IntentEdge, IntentGraph, IntentNode
 
 
 def _make_primitive(concept="test", pid="p1"):

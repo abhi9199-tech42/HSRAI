@@ -1,5 +1,5 @@
-import pytest
 import numpy as np
+import pytest
 
 from urcm.core.context_loader import ContextLoader
 

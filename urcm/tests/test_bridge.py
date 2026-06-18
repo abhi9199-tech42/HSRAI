@@ -1,9 +1,8 @@
-import pytest
 import numpy as np
+import pytest
 
 from urcm.integration.isre.bridge import IntentResonanceBridge
-from urcm.integration.isre.intent_models import IntentNode, GoalHierarchy
-from urcm.core.data_models import ResonanceState
+from urcm.integration.isre.intent_models import GoalHierarchy, IntentNode
 
 
 class TestIntentResonanceBridge:

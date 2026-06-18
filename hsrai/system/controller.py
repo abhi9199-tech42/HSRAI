@@ -1,20 +1,20 @@
 import asyncio
 import logging
 import time
-from typing import List, Optional
+from typing import List
 
-from hsrai.core.utils import deterministic_id
-from hsrai.compression.multimodal import MultiModalProcessor
 from hsrai.compression.mapper import PhonemeFrequencyMapper
+from hsrai.compression.multimodal import MultiModalProcessor
+from hsrai.core.types import EdgeType, IntentType
+from hsrai.core.utils import deterministic_id
 from hsrai.graph.builder import IntentGraphBuilder
 from hsrai.graph.models import IntentGraph
-from hsrai.core.types import IntentType, EdgeType
-from hsrai.reasoning.hybrid_engine import HybridReasoningEngine, ReasoningPath
-from hsrai.output.generator import OutputGenerator, GeneratedOutput
-from hsrai.trust.verifier import TrustManager
 from hsrai.knowledge.query import KnowledgeQueryEngine
-from hsrai.system.config import SystemConfig
+from hsrai.output.generator import GeneratedOutput, OutputGenerator
 from hsrai.plugins.manager import PluginManager
+from hsrai.reasoning.hybrid_engine import HybridReasoningEngine, ReasoningPath
+from hsrai.system.config import SystemConfig
+from hsrai.trust.verifier import TrustManager
 
 logger = logging.getLogger(__name__)
 
@@ -106,10 +106,10 @@ class SystemController:
         context_node = None
         results = self.knowledge_engine.query(primitive.concept)
         if results:
-            ctx_prims = [
-                self.multimodal.process_text(k.content, source_id="knowledge")
-                for k in results[:3]
-            ]
+            ctx_prims = []
+            for k in results[:3]:
+                content = str(k.content) if not isinstance(k.content, str) else k.content
+                ctx_prims.append(self.multimodal.process_text(content, source_id="knowledge"))
             context_node = builder.create_node(IntentType.CONTEXT, ctx_prims)
             builder.connect_nodes(context_node.id, goal_node.id, EdgeType.LOGICAL)
 
@@ -125,30 +125,31 @@ class SystemController:
                 return path
 
         engine = HybridReasoningEngine(builder.get_graph())
-        start_id = context_node.id if context_node else None
+        start_id = context_node.id if context_node else goal_node.id
         end_id = goal_node.id
 
-        if start_id:
-            engine.find_paths(start_id, end_id)
-            for _ in range(50):
-                converged = engine.step(dt=0.1)
-                if converged:
-                    self.observer_mgr.notify_path_found(converged, request_id)
-                    return converged
+        engine.find_paths(start_id, end_id)
+        for _ in range(50):
+            converged = engine.step(dt=0.1)
+            if converged:
+                self.observer_mgr.notify_path_found(converged, request_id)
+                return converged
 
         path = ReasoningPath(nodes=[goal_node], edges=[], mu_stability=1.0)
         self.observer_mgr.notify_path_found(path, request_id)
         return path
 
     async def _generate_output(self, path: ReasoningPath, request_id: str) -> GeneratedOutput:
+        start_time = time.monotonic()
         plugin = self.plugin_manager.get_output()
         if plugin:
             output = plugin.generate(path)
         else:
             output = self.output_generator.generate_text(path)
 
+        elapsed = time.monotonic() - start_time
         output.metadata["request_id"] = request_id
-        output.metadata["processing_time"] = time.time()
+        output.metadata["processing_time"] = elapsed
         return output
 
     def _error(self, message: str, request_id: str) -> GeneratedOutput:

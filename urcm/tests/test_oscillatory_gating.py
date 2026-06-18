@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+
 from urcm.core.oscillatory_gating import OscillatoryGating
 
 

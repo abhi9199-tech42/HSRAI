@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
-from typing import Dict, Any, Optional, List
+from typing import Any, Dict, Optional
+
 from hsrai.core.models import TrustCertificate
+
 
 @dataclass
 class GeneratedOutput:

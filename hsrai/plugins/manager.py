@@ -1,12 +1,14 @@
-from typing import Dict, Type, Any, Optional
-from hsrai.plugins.interfaces import CompressionPlugin, ReasoningPlugin, OutputPlugin
+from typing import Any, Dict, Optional
+
+from hsrai.plugins.interfaces import CompressionPlugin, OutputPlugin, ReasoningPlugin
+
 
 class PluginManager:
     def __init__(self):
         self.compression_plugins: Dict[str, CompressionPlugin] = {}
         self.reasoning_plugins: Dict[str, ReasoningPlugin] = {}
         self.output_plugins: Dict[str, OutputPlugin] = {}
-        
+
         # Active plugins
         self.active_compression: Optional[str] = None
         self.active_reasoning: Optional[str] = None
@@ -47,11 +49,11 @@ class PluginManager:
         for name, plugin in self.compression_plugins.items():
             plugin_config = config.get("plugins", {}).get("compression", {}).get(name, {})
             plugin.initialize(plugin_config)
-            
+
         for name, plugin in self.reasoning_plugins.items():
             plugin_config = config.get("plugins", {}).get("reasoning", {}).get(name, {})
             plugin.initialize(plugin_config)
-            
+
         for name, plugin in self.output_plugins.items():
             plugin_config = config.get("plugins", {}).get("output", {}).get(name, {})
             plugin.initialize(plugin_config)

@@ -1,8 +1,9 @@
-from typing import List, Dict, Any, Optional
-import uuid
+from typing import List
+
+from ..models.intent import IntentEdge, IntentGraph, IntentNode
 from ..models.primitives import SemanticPrimitive
-from ..models.intent import IntentNode, IntentEdge, IntentGraph
-from ..types import IntentType, EdgeType
+from ..types import EdgeType, IntentType
+
 
 class IntentGraphBuilder:
     """
@@ -70,7 +71,7 @@ class IntentGraphBuilder:
             for j in range(i + 1, len(node_list)):
                 n1 = node_list[i]
                 n2 = node_list[j]
-                
+
                 # Simple conflict heuristic: opposite semantic concepts
                 if self._are_conflicting(n1, n2):
                     conflict_info = {
@@ -79,7 +80,7 @@ class IntentGraphBuilder:
                         "description": f"Conflict between {n1.id} and {n2.id}"
                     }
                     n1.conflict_markers.append(conflict_info)
-                    
+
                     # Mutual marking
                     n2.conflict_markers.append({
                         "type": "semantic_opposition",
@@ -92,12 +93,12 @@ class IntentGraphBuilder:
         # Example logic: "fast" vs "slow" in the same context
         concepts1 = [p.concept for p in n1.semantic_payload]
         concepts2 = [p.concept for p in n2.semantic_payload]
-        
+
         opposites = {
             "attribute_fast": "attribute_slow",
             "action_move_fast": "action_move_slow"
         }
-        
+
         for c1 in concepts1:
             for c2 in concepts2:
                 if opposites.get(c1) == c2 or opposites.get(c2) == c1:

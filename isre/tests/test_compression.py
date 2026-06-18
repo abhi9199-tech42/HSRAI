@@ -1,4 +1,5 @@
 import pytest
+
 from isre.compression.text import ConceptMapper
 from isre.models.primitives import SemanticPrimitive
 

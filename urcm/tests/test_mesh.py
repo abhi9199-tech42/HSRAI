@@ -1,9 +1,9 @@
 import time
-import pytest
+
 import numpy as np
 
-from urcm.core.mesh import MeshNode, MeshNetwork
 from urcm.core.data_models import MeshSignal
+from urcm.core.mesh import MeshNetwork, MeshNode
 from urcm.core.validation import DataValidation
 
 

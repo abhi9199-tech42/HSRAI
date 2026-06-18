@@ -1,13 +1,13 @@
 [build-system]
 requires = ["setuptools>=68.0", "wheel"]
-build-backend = "setuptools.backends._legacy:_Backend"
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "hsrai"
 version = "1.0.0"
 description = "Hybrid Semantic Reasoning AI - A Deterministic, Auditable, Cryptographically Verifiable Reasoning Operating System"
 readme = "README.md"
-license = {text = "GPL-3.0"}
+license = "GPL-3.0"
 requires-python = ">=3.10"
 authors = [{name = "Kriti"}]
 dependencies = [
@@ -17,6 +17,10 @@ dependencies = [
     "cryptography>=41.0",
 ]
 
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["hsrai*", "urcm*", "isre*", "usecases*"]
+
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0",
@@ -24,10 +28,12 @@ dev = [
     "psutil>=5.9",
     "networkx>=3.0",
     "ruff>=0.1.0",
+    "httpx>=0.24.0,<0.28",
 ]
 api = [
     "fastapi>=0.100.0",
     "uvicorn>=0.23.0",
+    "httpx>=0.24.0,<0.28",
 ]
 nlp = [
     "sentence-transformers>=2.2.0",
@@ -35,11 +41,14 @@ nlp = [
 neo4j = [
     "neo4j>=5.0.0",
 ]
+loadtest = [
+    "aiohttp>=3.9.0",
+]
 usecases = [
     "sentence-transformers>=2.2.0",
 ]
 all = [
-    "hsrai[dev,api,nlp,neo4j,usecases]",
+    "hsrai[dev,api,nlp,neo4j,loadtest,usecases]",
 ]
 
 [project.scripts]

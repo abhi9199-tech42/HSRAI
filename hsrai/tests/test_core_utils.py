@@ -1,4 +1,3 @@
-import pytest
 from hsrai.core.utils import deterministic_id
 
 

@@ -1,10 +1,11 @@
-import pytest
 import numpy as np
-from hsrai.core.models import SemanticPrimitive, ResonanceState, TrustCertificate
-from hsrai.core.types import IntentType, EdgeType, SemanticType
-from hsrai.graph.models import IntentNode, IntentEdge, IntentGraph
+
 from hsrai.compression.mapper import PhonemeFrequencyMapper, PhonemeSequence
+from hsrai.core.models import ResonanceState, SemanticPrimitive
+from hsrai.core.types import IntentType, SemanticType
+from hsrai.graph.models import IntentGraph, IntentNode
 from hsrai.reasoning.oscillatory import OscillatoryGating
+
 
 def test_semantic_primitive():
     primitive = SemanticPrimitive(

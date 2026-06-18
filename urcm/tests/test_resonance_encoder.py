@@ -1,7 +1,8 @@
 import numpy as np
 import pytest
+
+from hsrai.common.phoneme import FrequencyPath
 from urcm.core.resonance_encoder import ResonancePathEncoder
-from urcm.core.data_models import FrequencyPath
 
 
 def _make_frequency_path(seq_len=5, input_dim=24):

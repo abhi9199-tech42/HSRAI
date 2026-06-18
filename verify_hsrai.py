@@ -86,14 +86,14 @@ def quick_functionality_test(project_dir):
         primitive = processor.process_text("Test input for HSRAI verification") 
         
         if primitive and primitive.concept == "Test input for HSRAI verification"[:50]: 
-            return True, f"✅ Compressed to primitive: {primitive.id}" 
+            return True, f"[OK] Compressed to primitive: {primitive.id}" 
         else: 
-            return False, "❌ Compression returned invalid result" 
+            return False, "[FAIL] Compression returned invalid result" 
             
     except ImportError as e: 
-        return False, f"❌ Cannot import HSRAI: {e}" 
+        return False, f"[FAIL] Cannot import HSRAI: {e}" 
     except Exception as e: 
-        return False, f"❌ Runtime error: {e}" 
+        return False, f"[FAIL] Runtime error: {e}" 
 
 def main(): 
     print("=" * 70) 
@@ -105,10 +105,10 @@ def main():
     project_dir = find_hsrai() 
     
     if not project_dir: 
-        print("❌ HSRAI not found. Please run from project root.") 
+        print("[FAIL] HSRAI not found. Please run from project root.") 
         return 
     
-    print(f"✅ Found: {project_dir}") 
+    print(f"Found: {project_dir}") 
     
     # Check structure 
     print("\n[2/4] Checking structure...") 
@@ -135,11 +135,11 @@ def main():
         print("-" * 70) 
         
         if returncode == 0: 
-            print("✅ ALL TESTS PASSED") 
+            print("[OK] ALL TESTS PASSED") 
         else: 
-            print(f"❌ Tests failed (code {returncode})") 
+            print(f"[FAIL] Tests failed (code {returncode})") 
     else: 
-        print("⚠️  Could not run tests") 
+        print("[WARN]  Could not run tests") 
         print("-" * 70) 
     
     # Functionality test 
@@ -157,9 +157,9 @@ def main():
     print(f"Functionality: {'PASS' if ok else 'FAIL'}") 
     
     if returncode == 0 and ok: 
-        print("\n🎉 VERDICT: HSRAI IS WORKING") 
+        print("\n[SUCCESS] VERDICT: HSRAI IS WORKING") 
     else: 
-        print("\n❌ VERDICT: HSRAI HAS ISSUES") 
+        print("\n[FAIL] VERDICT: HSRAI HAS ISSUES") 
     
     print("=" * 70) 
 

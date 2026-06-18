@@ -1,7 +1,9 @@
-from typing import List, Any
 import hashlib
-from .base import SemanticCompressor
+from typing import Any, List
+
 from ..models.primitives import SemanticPrimitive
+from .base import SemanticCompressor
+
 
 class PhonemeExtractor(SemanticCompressor):
     """
@@ -44,5 +46,5 @@ class PhonemeExtractor(SemanticCompressor):
                 concept=concept,
                 modality=self.modality
             ))
-            
+
         return primitives

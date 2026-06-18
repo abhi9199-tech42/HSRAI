@@ -260,13 +260,26 @@ class FraudDetector:
         """Run hybrid reasoning engine."""
         engine = HybridReasoningEngine(graph)
         
-        # Find all nodes
+        # Find goal node (last created) and context node (first)
         nodes = list(graph.nodes.values())
         if len(nodes) < 2:
             return None
         
-        start_id = nodes[0].id
-        end_id = nodes[-1].id
+        goal_node = None
+        context_node = None
+        for node in nodes:
+            if node.type == IntentType.GOAL:
+                goal_node = node
+            elif context_node is None:
+                context_node = node
+        
+        if goal_node is None:
+            goal_node = nodes[-1]
+        if context_node is None:
+            context_node = nodes[0]
+        
+        start_id = context_node.id
+        end_id = goal_node.id
         
         engine.find_paths(start_id, end_id)
         

@@ -1,8 +1,11 @@
 from dataclasses import dataclass, field
-from typing import List, Optional, Dict, Any
+from typing import Any, Dict
+
 import numpy as np
 from pydantic import BaseModel, Field
+
 from .types import SemanticType
+
 
 class SemanticPrimitive(BaseModel):
     """
@@ -46,7 +49,10 @@ class ResonanceState:
         if self.timestamp < 0:
             raise ValueError("Timestamp must be non-negative")
         # Ensure mu = rho / chi (with epsilon for stability)
-        calculated_mu = self.rho_density / (self.chi_cost + 1e-9)
+        chi_eff = self.chi_cost + 1e-9
+        if abs(self.chi_cost) < 1e-6:
+            chi_eff = max(abs(self.chi_cost), 1e-6)
+        calculated_mu = self.rho_density / chi_eff
         if not np.isclose(self.mu_value, calculated_mu, rtol=1e-3):
              raise ValueError(
                  f"mu_value ({self.mu_value:.6f}) does not match "

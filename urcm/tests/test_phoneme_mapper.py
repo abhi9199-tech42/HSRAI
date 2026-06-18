@@ -1,11 +1,11 @@
-import pytest
 import numpy as np
+import pytest
+
 from urcm.core.phoneme_mapper import (
     PhonemeFrequencyMapper,
-    TextToPhonemeConverter,
     PhonemeFrequencyPipeline,
+    TextToPhonemeConverter,
 )
-
 
 # ===========================================================================
 # PhonemeFrequencyMapper

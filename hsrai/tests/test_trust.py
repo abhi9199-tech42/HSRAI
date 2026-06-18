@@ -1,12 +1,13 @@
 import pytest
-from hypothesis import given, strategies as st
+
 from hsrai.core.models import SemanticPrimitive
-from hsrai.graph.models import IntentNode
 from hsrai.core.types import IntentType, SemanticType
-from hsrai.trust.verifier import TrustManager, BehavioralVerifier
+from hsrai.graph.models import IntentNode
+from hsrai.trust.verifier import BehavioralVerifier, TrustManager
+
 
 class TestTrustVerification:
-    
+
     def setup_method(self):
         self.manager = TrustManager()
         self.verifier = BehavioralVerifier()
@@ -18,9 +19,9 @@ class TestTrustVerification:
             type=IntentType.GOAL,
             semantic_payload=[]
         )
-        
+
         cert = self.manager.generate_certificate(node, node.id)
-        
+
         assert cert.issuer_id == self.manager.issuer_id
         assert cert.subject_id == node.id
         assert 0.0 <= cert.trust_score <= 1.0
@@ -36,7 +37,7 @@ class TestTrustVerification:
         )
         score_normal = self.verifier.calculate_alignment_score(normal_node)
         assert score_normal == 1.0
-        
+
         # Anomalous node (High intensity emotion)
         anomalous_node = IntentNode(
             id="intense",
@@ -67,7 +68,7 @@ class TestTrustVerification:
             semantic_payload=[]
         )
         cert = self.manager.generate_certificate(node, node.id)
-        
+
         # Tamper with the score
         cert.trust_score = 0.5 # Change score
         # Signature should now be invalid for this payload
@@ -75,10 +76,11 @@ class TestTrustVerification:
 
     def test_invalid_certificate(self):
         """Verify rejection of invalid certificates"""
-        import uuid
         import time
+        import uuid
+
         from hsrai.core.models import TrustCertificate
-        
+
         # Invalid score
         with pytest.raises(ValueError):
              TrustCertificate(
@@ -89,7 +91,7 @@ class TestTrustVerification:
                 timestamp=time.time(),
                 signature="valid_looking_signature"
             )
-            
+
         # Invalid signature content (garbage base64 or non-base64)
         cert_bad_sig = TrustCertificate(
             certificate_id=str(uuid.uuid4()),
@@ -99,5 +101,5 @@ class TestTrustVerification:
             timestamp=time.time(),
             signature="not_a_valid_base64_signature"
         )
-        
+
         assert not self.manager.verify_certificate(cert_bad_sig)

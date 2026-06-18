@@ -8,18 +8,12 @@ discrete token-based processing with continuous frequency-based representations.
 __version__ = "0.1.0"
 __author__ = "URCM Development Team"
 
-from .core.data_models import (
-    PhonemeSequence,
-    FrequencyPath,
-    ResonanceState,
-    AttractorState,
-    ReasoningPath,
-    MeshSignal
-)
+from .core.data_models import AttractorState, MeshSignal, ReasoningPath, ResonanceState
+from hsrai.common.phoneme import FrequencyPath, PhonemeSequence
 
 __all__ = [
     "PhonemeSequence",
-    "FrequencyPath", 
+    "FrequencyPath",
     "ResonanceState",
     "AttractorState",
     "ReasoningPath",

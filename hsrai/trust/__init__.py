@@ -1,2 +1,2 @@
-from .verifier import TrustManager, BehavioralVerifier
 from .reporting import ComplianceReporter
+from .verifier import BehavioralVerifier, TrustManager

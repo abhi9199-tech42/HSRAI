@@ -1,10 +1,8 @@
-import pytest
-from datetime import datetime
-from unittest.mock import MagicMock
 
-from hsrai.core.models import TrustCertificate
-from hsrai.trust.verifier import TrustManager
+import pytest
+
 from hsrai.trust.reporting import ComplianceReporter
+from hsrai.trust.verifier import TrustManager
 
 
 @pytest.fixture

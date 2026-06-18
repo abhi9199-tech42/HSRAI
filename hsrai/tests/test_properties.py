@@ -1,12 +1,14 @@
-import pytest
-from hypothesis import given, strategies as st
-from hypothesis.strategies import composite
-import numpy as np
 import math
 
-from hsrai.core.models import SemanticPrimitive, ResonanceState, TrustCertificate
-from hsrai.core.types import IntentType, EdgeType, SemanticType
-from hsrai.graph.models import IntentNode, IntentEdge
+import numpy as np
+import pytest
+from hypothesis import given
+from hypothesis import strategies as st
+from hypothesis.strategies import composite
+
+from hsrai.core.models import ResonanceState, SemanticPrimitive, TrustCertificate
+from hsrai.core.types import IntentType, SemanticType
+from hsrai.graph.models import IntentNode
 
 # --- Strategies ---
 
@@ -26,13 +28,13 @@ def resonance_state_strategy(draw):
     dim = draw(st.integers(min_value=16, max_value=64))
     rho = draw(st.floats(min_value=0.0, max_value=100.0))
     chi = draw(st.floats(min_value=0.1, max_value=100.0)) # Avoid 0 division
-    
+
     # Calculate mu approx to pass validation
     mu_calc = rho / (chi + 1e-9)
-    
+
     return ResonanceState(
         resonance_vector=np.array(draw(st.lists(st.floats(min_value=-1, max_value=1), min_size=dim, max_size=dim))),
-        mu_value=mu_calc, 
+        mu_value=mu_calc,
         rho_density=rho,
         chi_cost=chi,
         stability_score=draw(st.floats(min_value=0.0, max_value=1.0)),
@@ -66,7 +68,7 @@ def intent_node_strategy(draw):
 # --- Tests ---
 
 class TestCoreDataModels:
-    
+
     @given(semantic_primitive_strategy())
     def test_semantic_primitive_properties(self, primitive):
         """Property 1: Data model validation consistency - SemanticPrimitive"""
@@ -81,10 +83,10 @@ class TestCoreDataModels:
         # Verify Mu calculation constraint: mu = rho / chi
         expected_mu = state.rho_density / (state.chi_cost + 1e-9)
         assert np.isclose(state.mu_value, expected_mu, rtol=1e-3)
-        
+
         # Verify Phase constraint
         assert 0 <= state.oscillation_phase <= 2 * np.pi
-        
+
         # Verify vector dimensions
         assert state.resonance_vector.ndim == 1
 
@@ -99,14 +101,14 @@ class TestCoreDataModels:
         """Property 1: Data model validation consistency - IntentNode"""
         assert isinstance(node.id, str)
         assert isinstance(node.type, IntentType)
-        
+
         # Check payload integrity
         for primitive in node.semantic_payload:
             assert isinstance(primitive, SemanticPrimitive)
 
     @given(st.floats(min_value=-1.0, max_value=2.0))
     def test_trust_certificate_validation_logic(self, score):
-        """Verify that invalid trust scores raise ValueError"""
+        """Verify that invalid trust scores raise ValueError and valid ones don't"""
         if score < 0.0 or score > 1.0:
             with pytest.raises(ValueError):
                 TrustCertificate(
@@ -117,3 +119,13 @@ class TestCoreDataModels:
                     timestamp=1.0,
                     signature="sig"
                 )
+        else:
+            cert = TrustCertificate(
+                certificate_id="test",
+                issuer_id="me",
+                subject_id="you",
+                trust_score=score,
+                timestamp=1.0,
+                signature="sig"
+            )
+            assert cert.trust_score == score

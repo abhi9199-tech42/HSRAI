@@ -1,6 +1,8 @@
-from typing import List, Dict, Any
-from .base import OutputReconstructor
+from typing import Any, Dict, List
+
 from ..models.reasoning import ReasoningDecision
+from .base import OutputReconstructor
+
 
 class ActionPlanner(OutputReconstructor):
     """
@@ -23,11 +25,11 @@ class ActionPlanner(OutputReconstructor):
                 "type": step.type.value,
                 "parameters": {}
             }
-            
+
             # Extract params from primitives
             for prim in step.semantic_payload:
                 action_item["parameters"][prim.id] = prim.concept
-                
+
             plan.append(action_item)
-            
+
         return plan

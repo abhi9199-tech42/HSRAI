@@ -1,5 +1,6 @@
 from typing import Any, Dict, Protocol
 
+
 class DomainModule(Protocol):
     def execute(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         ...
@@ -9,7 +10,7 @@ class DomainLogicManager:
     Manages pluggable domain-specific logic modules.
     Requirement 4.5: Use modular plug-in logic units.
     """
-    
+
     def __init__(self):
         self._modules: Dict[str, DomainModule] = {}
 

@@ -1,8 +1,7 @@
-import pytest
-from isre.reasoning.generator import ReasoningPathGenerator
-from isre.models.intent import IntentGraph, IntentNode
-from hsrai.common.types import IntentType, EdgeType, SemanticType
 from hsrai.common.models import SemanticPrimitive
+from hsrai.common.types import IntentType, SemanticType
+from isre.models.intent import IntentGraph, IntentNode
+from isre.reasoning.generator import ReasoningPathGenerator
 
 
 def _make_node(nid="n1", ntype=IntentType.GOAL):

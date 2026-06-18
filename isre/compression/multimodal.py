@@ -1,15 +1,17 @@
-from typing import List, Dict, Any
-from .base import SemanticCompressor
-from .text import ConceptMapper
-from .speech import PhonemeExtractor
+from typing import Any, Dict, List
+
 from ..models.primitives import SemanticPrimitive
+from .base import SemanticCompressor
+from .speech import PhonemeExtractor
+from .text import ConceptMapper
+
 
 class MultimodalProcessor:
     """
     Coordinates multiple semantic compressors to handle various input types.
     Maintains the deterministic property of the compression layer.
     """
-    
+
     def __init__(self):
         self._compressors: Dict[str, SemanticCompressor] = {}
         # Register default compressors
@@ -26,5 +28,5 @@ class MultimodalProcessor:
         """
         if modality not in self._compressors:
             raise ValueError(f"No compressor registered for modality: {modality}")
-            
+
         return self._compressors[modality].compress(raw_input)

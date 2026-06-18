@@ -1,7 +1,8 @@
 from typing import List
-from ..models.reasoning import ReasoningPath, ReasoningDecision
-from ..models.intent import IntentNode
+
+from ..models.reasoning import ReasoningDecision, ReasoningPath
 from ..types import IntentType
+
 
 class CompetitiveSelector:
     """
@@ -15,7 +16,7 @@ class CompetitiveSelector:
 
         best_path = None
         best_score = -1.0
-        
+
         scored_paths = []
 
         for path in paths:
@@ -32,9 +33,9 @@ class CompetitiveSelector:
             # 2. Weighted Sum (for now equal weights)
             # In a real system, these weights could be adaptive.
             total_score = (satisfaction * 0.4) + (compliance * 0.4) + (coherence * 0.2)
-            
+
             scored_paths.append(path)
-            
+
             if total_score > best_score:
                 best_score = total_score
                 best_path = path
@@ -65,12 +66,12 @@ class CompetitiveSelector:
         # Penalize if any active node has a conflict marker pointing to another active node in the path
         active_ids = {n.id for n in path.steps}
         conflicts_found = 0
-        
+
         for node in path.steps:
             for marker in node.conflict_markers:
                 if marker['partner_id'] in active_ids:
                     conflicts_found += 1
-        
+
         # If conflicts exist in the path, compliance is low
         if conflicts_found > 0:
             return 0.2

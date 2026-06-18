@@ -1,5 +1,6 @@
-from .base import OutputReconstructor
 from ..models.reasoning import ReasoningDecision
+from .base import OutputReconstructor
+
 
 class LanguageGenerator(OutputReconstructor):
     """
@@ -23,7 +24,7 @@ class LanguageGenerator(OutputReconstructor):
                 # In a real system, this would use a grammar engine
                 c = step.semantic_payload[0].concept
                 concepts.append(self._humanize(c))
-        
+
         # Construct justification
         core_message = " ".join(concepts)
         return f"Decision: {core_message}. Rationale: {decision.justification}"

@@ -1,6 +1,6 @@
-import pytest
+
 import numpy as np
-from dataclasses import replace
+import pytest
 
 from urcm.core.attractor_network import AttractorNetwork
 from urcm.core.data_models import AttractorState

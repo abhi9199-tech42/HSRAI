@@ -1,8 +1,10 @@
-from typing import Protocol, Any, List, Optional, Dict
+from typing import Any, Dict, Optional, Protocol
+
 from hsrai.core.models import SemanticPrimitive
 from hsrai.graph.models import IntentGraph
-from hsrai.reasoning.hybrid_engine import ReasoningPath
 from hsrai.output.models import GeneratedOutput
+from hsrai.reasoning.hybrid_engine import ReasoningPath
+
 
 class Plugin(Protocol):
     def initialize(self, config: Dict[str, Any]) -> None:

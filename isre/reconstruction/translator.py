@@ -1,9 +1,11 @@
-from typing import Dict, Any, Type
-from .base import OutputReconstructor
-from .language import LanguageGenerator
-from .code import CodeGenerator
-from .action import ActionPlanner
+from typing import Any, Dict
+
 from ..models.reasoning import ReasoningDecision
+from .action import ActionPlanner
+from .base import OutputReconstructor
+from .code import CodeGenerator
+from .language import LanguageGenerator
+
 
 class MultiFormatTranslator:
     """
@@ -11,7 +13,7 @@ class MultiFormatTranslator:
     Requirement 5.2: Support multiple output languages/formats.
     Requirement 5.3: Express same decision in different formats.
     """
-    
+
     def __init__(self):
         self._reconstructors: Dict[str, OutputReconstructor] = {}
         # Register defaults
@@ -28,12 +30,12 @@ class MultiFormatTranslator:
         """
         if formats is None:
             formats = list(self._reconstructors.keys())
-            
+
         results = {}
         for fmt in formats:
             if fmt in self._reconstructors:
                 results[fmt] = self._reconstructors[fmt].reconstruct(decision)
             else:
                 results[fmt] = f"Error: Format '{fmt}' not supported"
-        
+
         return results

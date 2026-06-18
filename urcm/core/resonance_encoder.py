@@ -8,12 +8,14 @@ It supports modular encoding backends, with a default NumPy-based recurrent impl
 that simulates semantic accumulation through time.
 """
 
-from typing import Optional, Dict, Any, Union
-import numpy as np
-import time
+from typing import Union
 
-from urcm.core.data_models import FrequencyPath, ResonanceState
+import numpy as np
+
+from hsrai.common.phoneme import FrequencyPath
+from urcm.core.data_models import ResonanceState
 from urcm.core.theory import URCMTheory
+
 
 class ResonancePathEncoder:
     """
@@ -23,10 +25,10 @@ class ResonancePathEncoder:
     phoneme frequencies and building up a stable 'chord' (ResonanceState)
     that represents the meaning.
     """
-    
+
     def __init__(
-        self, 
-        input_dim: int = 24, 
+        self,
+        input_dim: int = 24,
         resonance_dim: int = 64,
         encoder_type: str = "recurrent_numpy"
     ):
@@ -41,7 +43,7 @@ class ResonancePathEncoder:
         self.input_dim = input_dim
         self.resonance_dim = resonance_dim
         self.encoder_type = encoder_type
-        
+
         # Initialize internal state/weights based on type
         if encoder_type == "recurrent_numpy":
             self._init_numpy_recurrent()
@@ -49,7 +51,7 @@ class ResonancePathEncoder:
             self._init_transformer_stub()
         else:
             raise ValueError(f"Unsupported encoder type: {encoder_type}")
-            
+
     def _init_numpy_recurrent(self):
         """
         Initialize a simple Echo State Network / Reservoir-like structure
@@ -58,16 +60,16 @@ class ResonancePathEncoder:
         # Random projection matrix from Input -> Resonance Space
         rng = np.random.default_rng(42)
         self.W_in = rng.normal(0, 0.1, (self.input_dim, self.resonance_dim))
-        
+
         # Recurrent weight matrix (Resonance -> Resonance)
         # Scaled to be stable (spectral radius < 1 generally, but close to 1 for long memory)
         self.W_res = rng.normal(0, 0.1, (self.resonance_dim, self.resonance_dim))
-        
+
         # Ensure spectral radius is < 1 to prevent explosion
         spectral_radius = np.max(np.abs(np.linalg.eigvals(self.W_res)))
         if spectral_radius > 0:
             self.W_res = self.W_res / (spectral_radius * 1.1)
-            
+
         # Bias
         self.bias = rng.normal(0, 0.01, self.resonance_dim)
 
@@ -80,7 +82,7 @@ class ResonancePathEncoder:
         self.W_q = rng.normal(0, 0.1, (self.input_dim, 32))
         self.W_k = rng.normal(0, 0.1, (self.input_dim, 32))
         self.W_v = rng.normal(0, 0.1, (self.input_dim, self.resonance_dim))
-        
+
     def encode_path(self, frequency_path: Union[FrequencyPath, np.ndarray]) -> np.ndarray:
         """
         Convert a frequency path into a final resonance vector.
@@ -96,12 +98,12 @@ class ResonancePathEncoder:
             vectors = frequency_path.vectors
         else:
             vectors = frequency_path
-            
+
         if vectors.shape[1] != self.input_dim:
             raise ValueError(
                 f"Input dimension mismatch. Expected {self.input_dim}, got {vectors.shape[1]}"
             )
-            
+
         if self.encoder_type == "recurrent_numpy":
             return self._encode_recurrent(vectors)
         elif self.encoder_type == "transformer_stub":
@@ -112,21 +114,21 @@ class ResonancePathEncoder:
     def _encode_recurrent(self, vectors: np.ndarray) -> np.ndarray:
         # Initialize state
         current_state = np.zeros(self.resonance_dim)
-        
+
         # Temporal Processing Loop (The "Listening" Phase)
         # s_t = tanh(W_in * x_t + W_res * s_{t-1} + b)
         for t in range(vectors.shape[0]):
             x_t = vectors[t]
-            
+
             # Input projection
             input_signal = np.dot(x_t, self.W_in)
-            
+
             # Recurrent echo
             echo_signal = np.dot(current_state, self.W_res)
-            
+
             # Non-linear activation (tanh works well for resonance bounds [-1, 1])
             current_state = np.tanh(input_signal + echo_signal + self.bias)
-            
+
         return current_state
 
     def _encode_transformer(self, vectors: np.ndarray) -> np.ndarray:
@@ -137,26 +139,26 @@ class ResonancePathEncoder:
         # Q = vectors * W_q
         # K = vectors * W_k
         # V = vectors * W_v
-        
+
         Q = np.dot(vectors, self.W_q) # (Seq, 32)
         K = np.dot(vectors, self.W_k) # (Seq, 32)
         V = np.dot(vectors, self.W_v) # (Seq, Dim)
-        
+
         # Attention scores = softmax(Q * K.T / sqrt(d_k))
         # We'll just do a global pooling for the "context vector"
         # For this stub, let's treat the *last* vector as the query for the whole sequence
         query = Q[-1] # (32,)
-        
+
         scores = np.dot(K, query) / np.sqrt(32) # (Seq,)
-        
+
         # Softmax
         exp_scores = np.exp(scores - np.max(scores))
         weights = exp_scores / np.sum(exp_scores)
-        
+
         # Weighted sum of V
         # context = sum(w_i * v_i)
         context = np.dot(weights, V) # (Dim,)
-        
+
         return np.tanh(context) # Squash to valid resonance range
 
     def get_resonance_state(self, frequency_path: FrequencyPath) -> ResonanceState:
@@ -171,25 +173,25 @@ class ResonancePathEncoder:
         """
         # 1. Encode the path
         resonance_vector = self.encode_path(frequency_path)
-        
+
         # 2. Calculate Theoretical Metrics
         # ρ (rho): Semantic Density - how 'pure' or 'strong' is the signal?
         rho = URCMTheory.calculate_rho(resonance_vector)
-        
+
         # χ (chi): Transformation Cost - "Manifold distance" from zero/neutral state
         # In this context, we can define chi as the energy required to maintain this state.
         # Simple approximation: Norm of the vector.
         chi = np.linalg.norm(resonance_vector)
-        
+
         # μ (mu): Resonance/Stability = rho / chi
         mu = URCMTheory.compute_mu(rho, chi)
-        
+
         # Stability Score: A higher-level metric, can be derived from mu and smoothness
         stability = mu * (1.0 + frequency_path.smoothness_score)
-        
+
         # Phase: Initial phase is 0, will be modulated by OscillatoryGating later
         phase = 0.0
-        
+
         return ResonanceState(
             resonance_vector=resonance_vector,
             mu_value=mu,
@@ -197,5 +199,5 @@ class ResonancePathEncoder:
             chi_cost=chi,
             stability_score=stability,
             oscillation_phase=phase,
-            timestamp=time.time()
+            timestamp=0.0
         )

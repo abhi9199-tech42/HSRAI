@@ -1,6 +1,6 @@
-import math
 import cmath
-from typing import Dict, Any
+from typing import Any, Dict
+
 
 class OscillatoryGate:
     """

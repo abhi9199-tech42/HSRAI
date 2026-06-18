@@ -1,13 +1,13 @@
-import pytest
 import numpy as np
-from urcm.core.data_models import (
-    ResonanceState,
-    AttractorState,
-    ReasoningPath,
-    MeshSignal,
-)
-from hsrai.common.phoneme import PhonemeSequence, FrequencyPath
+import pytest
 
+from hsrai.common.phoneme import FrequencyPath, PhonemeSequence
+from urcm.core.data_models import (
+    AttractorState,
+    MeshSignal,
+    ReasoningPath,
+    ResonanceState,
+)
 
 # ---------------------------------------------------------------------------
 # Helpers

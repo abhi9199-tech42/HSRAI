@@ -1,6 +1,5 @@
-import pytest
-from isre.models.primitives import SemanticPrimitive
 from hsrai.common.types import SemanticType
+from isre.models.primitives import SemanticPrimitive
 
 
 class TestSemanticPrimitive:

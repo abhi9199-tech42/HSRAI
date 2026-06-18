@@ -1,9 +1,10 @@
-from typing import List, Dict, Any, Tuple
-import uuid
 import copy
+import uuid
+from typing import List, Tuple
+
 from ..models.intent import IntentGraph, IntentNode
 from ..models.reasoning import ReasoningPath
-from ..types import IntentType
+
 
 class ReasoningPathGenerator:
     """
@@ -18,10 +19,10 @@ class ReasoningPathGenerator:
         """
         # 1. Identify conflicts
         conflicts = self._get_conflicts(graph)
-        
+
         # 2. Base path (linear sequence of all nodes if no conflicts, or generic topological sort)
         # For prototype, we take nodes in order of creation/ID or a simple sort
-        base_sequence = list(graph.nodes.values()) 
+        base_sequence = list(graph.nodes.values())
         # In a real graph, we'd follow edges. Assuming temporal edges for now.
 
         paths = []
@@ -34,17 +35,17 @@ class ReasoningPathGenerator:
             # For each conflict pair (A, B), generate strategies:
             # Strategy 1: Prioritize A (Suppress B)
             # Strategy 2: Prioritize B (Suppress A)
-            
+
             # Simple implementation: Handle the first major conflict found to branch
             # (Full CSP solver would be needed for complex multi-conflict graphs)
-            
+
             # Group conflicts for valid branching (simplification)
             processed_pairs = set()
-            
+
             for conflict in conflicts:
                 n1, n2 = conflict
                 pair_id = tuple(sorted((n1.id, n2.id)))
-                
+
                 if pair_id in processed_pairs:
                     continue
                 processed_pairs.add(pair_id)
@@ -58,7 +59,7 @@ class ReasoningPathGenerator:
                 paths.append(self._create_path(seq_b, f"Prioritize {n2.id} over {n1.id}"))
 
         # 3. Add generic "Cautious" path that keeps all but lowers confidence/weights?
-        # Or an "Exploratory" path. 
+        # Or an "Exploratory" path.
         # Requirement 3.1 asks for multiple reasoning paths.
         if len(paths) == 1:
              # If no conflicts, still generate an alternative "Audit/Verify" path
@@ -83,7 +84,7 @@ class ReasoningPathGenerator:
         # Calculate initial semantic coherence (mock calculation based on node types)
         coherence = 1.0
         # Penalty for mixed goals/constraints without resolution?
-        
+
         return ReasoningPath(
             id=f"path_{uuid.uuid4().hex[:8]}",
             steps=copy.deepcopy(steps),

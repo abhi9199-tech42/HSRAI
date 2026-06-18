@@ -3,14 +3,18 @@ Neo4j-backed knowledge graph for HSRAI.
 
 Provides a real graph database backend for knowledge storage and retrieval,
 replacing the in-memory dictionary with persistent, queryable relationships.
+
+Includes retry with exponential backoff and circuit breaker pattern.
 """
 
 import logging
-from typing import List, Dict, Any, Optional
+import os
 from dataclasses import dataclass
+from typing import Any, Dict, List
 
 from hsrai.core.utils import deterministic_id
 from hsrai.knowledge.models import KnowledgeEntry, KnowledgeSourceType
+from hsrai.resilience import CircuitBreaker, retry_with_backoff
 
 logger = logging.getLogger(__name__)
 
@@ -18,22 +22,25 @@ logger = logging.getLogger(__name__)
 @dataclass
 class Neo4jConfig:
     """Configuration for Neo4j connection."""
-    uri: str = "bolt://localhost:7687"
-    user: str = "neo4j"
-    password: str = "password"
+    uri: str = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
+    user: str = os.environ.get("NEO4J_USER", "neo4j")
+    password: str = os.environ.get("NEO4J_PASSWORD", "")
     database: str = "neo4j"
     max_connection_pool_size: int = 50
+    max_retries: int = 3
+    retry_base_delay: float = 1.0
+    circuit_failure_threshold: int = 5
+    circuit_recovery_timeout: float = 30.0
 
 
 class Neo4jKnowledgeGraph:
     """
     Neo4j-backed knowledge graph implementing the KnowledgeSource protocol.
 
-    Stores knowledge as nodes and relationships in a graph database,
-    enabling complex queries like:
-    - "Find all entities related to this transaction"
-    - "What are the risk factors connected to this account?"
-    - "Trace the path between two entities"
+    Includes:
+    - Retry with exponential backoff for transient failures
+    - Circuit breaker to prevent cascading failures
+    - Automatic fallback to in-memory storage
 
     Falls back to in-memory storage if Neo4j is not available.
     """
@@ -45,26 +52,56 @@ class Neo4jKnowledgeGraph:
         self._driver = None
         self._fallback_data: Dict[str, Any] = {}
         self._connected = False
+        self._circuit = CircuitBreaker(
+            failure_threshold=self.config.circuit_failure_threshold,
+            recovery_timeout=self.config.circuit_recovery_timeout,
+        )
 
     def connect(self) -> bool:
         """
-        Connect to Neo4j. Returns True if successful, falls back to memory.
+        Connect to Neo4j with retry and circuit breaker.
+        Returns True if successful, falls back to memory.
         """
-        try:
+        if not self._circuit.allow_request():
+            logger.warning("Neo4j circuit breaker OPEN, using in-memory fallback")
+            self._connected = False
+            return False
+
+        def _do_connect():
             from neo4j import GraphDatabase
             self._driver = GraphDatabase.driver(
                 self.config.uri,
                 auth=(self.config.user, self.config.password),
                 max_connection_pool_size=self.config.max_connection_pool_size,
             )
-            # Verify connection
             self._driver.verify_connectivity()
+            return True
+
+        try:
+            retry_with_backoff(
+                _do_connect,
+                max_retries=self.config.max_retries,
+                base_delay=self.config.retry_base_delay,
+            )
             self._connected = True
+            self._circuit.record_success()
             logger.info("Connected to Neo4j at %s", self.config.uri)
             self._create_indexes()
             return True
         except Exception as e:
-            logger.warning("Neo4j unavailable, using in-memory fallback: %s", e)
+            self._circuit.record_failure()
+            logger.warning("Neo4j unavailable after retries, using in-memory fallback: %s", e)
+            self._connected = False
+            return False
+
+    def is_healthy(self) -> bool:
+        """Check if Neo4j connection is healthy."""
+        if not self._connected or not self._driver:
+            return False
+        try:
+            self._driver.verify_connectivity()
+            return True
+        except Exception:
             self._connected = False
             return False
 
@@ -92,9 +129,10 @@ class Neo4jKnowledgeGraph:
         props["name"] = name
         props["type"] = entity_type
 
+        safe_label = entity_type.replace("'", "").replace(";", "")
         with self._driver.session(database=self.config.database) as session:
             session.run(
-                f"MERGE (n:{entity_type} {{name: $name}}) SET n += $props",
+                f"MERGE (n:`{safe_label}` {{name: $name}}) SET n += $props",
                 name=name, props=props
             )
 
@@ -104,10 +142,11 @@ class Neo4jKnowledgeGraph:
             return
 
         props = properties or {}
+        safe_rel = rel_type.replace("'", "").replace(";", "")
         with self._driver.session(database=self.config.database) as session:
             session.run(
                 f"MATCH (a {{name: $from_name}}), (b {{name: $to_name}}) "
-                f"MERGE (a)-[r:{rel_type}]->(b) SET r += $props",
+                f"MERGE (a)-[r:`{safe_rel}`]->(b) SET r += $props",
                 from_name=from_name, to_name=to_name, props=props
             )
 
@@ -192,7 +231,15 @@ class Neo4jKnowledgeGraph:
     def get_risk_factors(self, account_id: str) -> List[Dict]:
         """Get risk factors associated with an account."""
         if not self._connected:
-            return []
+            # Fallback: search for transactions linked to this account
+            results = []
+            for key, value in self._fallback_data.items():
+                if key.startswith("Transaction:") and isinstance(value, dict):
+                    if value.get("account_id") == account_id or account_id in key:
+                        results.append(value)
+                elif account_id in key and "RiskFactor" in key:
+                    results.append(value)
+            return results
 
         with self._driver.session(database=self.config.database) as session:
             result = session.run(

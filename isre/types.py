@@ -1,4 +1,4 @@
 # Re-export from canonical source
-from hsrai.common.types import IntentType, EdgeType, SemanticType
+from hsrai.common.types import EdgeType, IntentType, SemanticType
 
 __all__ = ["IntentType", "EdgeType", "SemanticType"]

@@ -1,8 +1,8 @@
-import pytest
 import numpy as np
+import pytest
 
-from urcm.core.latent_space import SemanticLatentSpace
 from urcm.core.data_models import ResonanceState
+from urcm.core.latent_space import SemanticLatentSpace
 
 
 def _make_state(input_dim=64):
