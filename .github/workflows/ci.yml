@@ -22,12 +22,13 @@ jobs:
         run: |
           pip install --upgrade pip setuptools wheel
           pip install -e ".[dev,api]" --verbose
+          pip install pytest-timeout
       - name: Run ruff check (non-blocking)
         run: ruff check hsrai/ urcm/ isre/ || true
       - name: Run ruff format check (non-blocking)
         run: ruff format --check hsrai/ urcm/ isre/ || true
       - name: Run tests
-        run: pytest hsrai/tests/ urcm/tests/ isre/tests/ -q --tb=short
+        run: pytest hsrai/tests/ urcm/tests/ isre/tests/ -q --tb=short --timeout=60
 
   build:
     needs: [test]
