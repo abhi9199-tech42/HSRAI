@@ -27,7 +27,7 @@ jobs:
       - name: Run ruff format check (non-blocking)
         run: ruff format --check hsrai/ urcm/ isre/ || true
       - name: Run tests
-        run: pytest hsrai/tests/ urcm/tests/ isre/tests/ -q --tb=short --timeout=60
+        run: pytest hsrai/tests/ urcm/tests/ isre/tests/ -q --tb=short
 
   build:
     needs: [test]

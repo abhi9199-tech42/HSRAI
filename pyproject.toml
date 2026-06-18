@@ -57,6 +57,7 @@ hsrai = "hsrai.cli:main"
 
 [tool.pytest.ini_options]
 testpaths = ["hsrai/tests", "urcm/tests", "isre/tests", "usecases"]
+timeout = 60
 
 [tool.ruff]
 line-length = 120
