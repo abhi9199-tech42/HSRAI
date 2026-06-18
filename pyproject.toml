@@ -12,7 +12,7 @@ requires-python = ">=3.10"
 authors = [{name = "Kriti"}]
 dependencies = [
     "numpy>=1.21",
-    "scipy>=1.9",
+    "scipy>=1.15.3",
     "pydantic>=2.0",
     "cryptography>=41.0",
 ]

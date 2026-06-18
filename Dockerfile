@@ -9,8 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY pyproject.toml ./
 
-RUN pip install --no-cache-dir -e ".[api,nlp]" || \
-    pip install --no-cache-dir "numpy<2" "scipy<=1.11.4" "pydantic<3" "cryptography<45" fastapi uvicorn
+RUN pip install --no-cache-dir "numpy<2" "scipy==1.15.3" "pydantic<3" "cryptography<45" fastapi uvicorn
 
 COPY hsrai/ ./hsrai/
 COPY urcm/ ./urcm/
