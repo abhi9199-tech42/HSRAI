@@ -40,7 +40,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Build Docker image
-        run: docker build -t hsrai:${{ github.sha }} .
+        run: docker build --no-cache -t hsrai:${{ github.sha }} .
       - name: Run smoke test
         run: |
           docker run -d --name hsrai-test -p 8000:8000 \
