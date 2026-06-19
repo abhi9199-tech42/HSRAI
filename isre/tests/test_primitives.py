@@ -23,9 +23,15 @@ class TestSemanticPrimitive:
         assert sp.semantic_weight == 0.8
         assert sp.modality == "speech"
 
-    def test_hash_equality_same_id(self):
+    def test_hash_different_concept_different_id(self):
         a = SemanticPrimitive(id="sp_x", concept="alpha")
         b = SemanticPrimitive(id="sp_x", concept="beta")
+        assert hash(a) != hash(b)
+        assert a != b
+
+    def test_hash_equality_same_content(self):
+        a = SemanticPrimitive(id="sp_x", concept="alpha")
+        b = SemanticPrimitive(id="sp_x", concept="alpha")
         assert hash(a) == hash(b)
         assert a == b
 
