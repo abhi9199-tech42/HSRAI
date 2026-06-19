@@ -68,6 +68,10 @@ class IntentGraphBuilder:
         Current Rule: A Constraint connected to a Goal via a PRIORITY edge
         implies a potential resource conflict or blocking state.
         """
+        # Clear existing conflict markers to avoid duplicates on repeated calls
+        for node in self.graph.nodes.values():
+            node.conflict_markers.clear()
+
         conflicts = []
 
         for edge in self.graph.edges:

@@ -5,6 +5,7 @@ Converts raw text into high-dimensional semantic embeddings that capture
 meaning beyond surface-level text matching.
 """
 
+import asyncio
 import hashlib
 import logging
 from datetime import datetime
@@ -42,9 +43,10 @@ class NLPCompressor:
         self.device = device
         self._model = None
         self._embedding_dim = None
+        self._load_lock = asyncio.Lock()
 
     def _load_model(self):
-        """Lazy load the sentence-transformers model."""
+        """Lazy load the sentence-transformers model (thread-safe)."""
         if self._model is not None:
             return
         try:
@@ -57,6 +59,22 @@ class NLPCompressor:
                 "sentence-transformers is required for NLP compression. "
                 "Install with: pip install sentence-transformers"
             )
+
+    async def _load_model_async(self):
+        """Thread-safe async lazy load."""
+        async with self._load_lock:
+            if self._model is not None:
+                return
+            try:
+                from sentence_transformers import SentenceTransformer
+                self._model = SentenceTransformer(self.model_name, device=self.device)
+                self._embedding_dim = self._model.get_embedding_dimension()
+                logger.info("Loaded NLP model: %s (dim=%d)", self.model_name, self._embedding_dim)
+            except ImportError:
+                raise ImportError(
+                    "sentence-transformers is required for NLP compression. "
+                    "Install with: pip install sentence-transformers"
+                )
 
     @property
     def embedding_dim(self) -> int:

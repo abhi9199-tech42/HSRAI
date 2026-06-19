@@ -14,7 +14,12 @@ def deterministic_id(data: Dict[str, Any]) -> str:
         if isinstance(obj, Enum):
             return obj.value
         if hasattr(obj, "__dict__"):
-            return obj.__dict__
+            # Sort dict keys for deterministic serialization
+            return {k: obj.__dict__[k] for k in sorted(obj.__dict__.keys())}
+        if isinstance(obj, dict):
+            return {k: obj[k] for k in sorted(obj.keys())}
+        if isinstance(obj, (list, tuple, set)):
+            return list(obj)
         return str(obj)
 
     # Use sort_keys=True and a consistent separator for reproducibility

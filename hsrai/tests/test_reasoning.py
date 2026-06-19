@@ -1,5 +1,7 @@
 import math
 
+import pytest
+
 from hsrai.core.models import SemanticPrimitive
 from hsrai.core.types import EdgeType, IntentType, SemanticType
 from hsrai.graph.builder import IntentGraphBuilder
@@ -62,7 +64,8 @@ class TestReasoningEngine:
 
         assert mu_a > mu_b
 
-    def test_oscillatory_convergence(self):
+    @pytest.mark.asyncio
+    async def test_oscillatory_convergence(self):
         """Property 7: Oscillatory convergence"""
         self.engine.find_paths("start", "end")
 
@@ -71,7 +74,7 @@ class TestReasoningEngine:
         # We need enough steps to allow phase to oscillate and delta_mu to stabilize
         # Use smaller dt to ensure we have enough steps within the attention window
         for _ in range(200):
-            result = self.engine.step(dt=0.01)
+            result = await self.engine.step(dt=0.01)
             if result:
                 converged_path = result
                 break
@@ -83,9 +86,9 @@ class TestReasoningEngine:
     def test_gating_window(self):
         """Verify gating window logic"""
         gating = OscillatoryGating()
-        gating.reset_phase(0.0) # Cos(0) = 1 (In window)
-        assert gating.in_attention_window()
+        gating.reset_phase_sync(0.0) # Cos(0) = 1 (In window)
+        assert gating.in_attention_window_sync()
 
-        gating.reset_phase(math.pi) # Cos(pi) = -1 (Out of window)
-        assert not gating.in_attention_window()
+        gating.reset_phase_sync(math.pi) # Cos(pi) = -1 (Out of window)
+        assert not gating.in_attention_window_sync()
 

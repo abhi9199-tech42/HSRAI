@@ -58,12 +58,11 @@ class TestEndToEnd:
     @pytest.mark.anyio
     async def test_pipeline_error_recovery(self):
         """Verify system handles component failures gracefully"""
-        # Create a controller with a very short timeout to force timeout error
-        config = SystemConfig(timeout_ms=1)
+        # Create a controller with zero timeout to force immediate timeout
+        config = SystemConfig(timeout_ms=0)
         controller = SystemController(config=config)
 
-        # This should timeout because of the sleeps in _process_pipeline (1ms + 1ms > 1ms)
-        # Note: sleep(0.001) is 1ms. Two sleeps = 2ms.
+        # This should timeout immediately since the pipeline has async awaits
         output = await controller.process_request("Input")
 
         assert output.metadata.get("error") is True

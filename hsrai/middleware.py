@@ -29,11 +29,14 @@ class APIKeyAuth:
 class RateLimiter:
     """Token bucket rate limiter per client."""
 
-    def __init__(self, max_requests: int = 100, window_seconds: int = 60):
+    def __init__(self, max_requests: int = 100, window_seconds: int = 60, max_clients: int = 10000):
         self.max_requests = max_requests
         self.window_seconds = window_seconds
+        self.max_clients = max_clients
         self._requests: Dict[str, list] = defaultdict(list)
         self._lock = asyncio.Lock()
+        self._last_cleanup = time.time()
+        self._cleanup_interval = 300  # 5 minutes
 
     async def check(self, client_id: str) -> bool:
         async with self._lock:
@@ -45,7 +48,37 @@ class RateLimiter:
             if len(self._requests[client_id]) >= self.max_requests:
                 return False
             self._requests[client_id].append(now)
+            await self._maybe_cleanup(now)
             return True
+
+    async def _maybe_cleanup(self, now: float):
+        """Periodically clean up inactive clients to prevent memory leak."""
+        if now - self._last_cleanup < self._cleanup_interval:
+            return
+        if len(self._requests) <= self.max_clients:
+            self._last_cleanup = now
+            return
+
+        cutoff = now - self.window_seconds
+        # Remove clients with no recent requests
+        to_remove = [
+            client_id for client_id, timestamps in self._requests.items()
+            if not any(t > cutoff for t in timestamps)
+        ]
+        for client_id in to_remove:
+            del self._requests[client_id]
+
+        # If still too many, remove oldest
+        if len(self._requests) > self.max_clients:
+            sorted_clients = sorted(
+                self._requests.items(),
+                key=lambda kv: max(kv[1]) if kv[1] else 0
+            )
+            to_remove = len(self._requests) - self.max_clients
+            for client_id, _ in sorted_clients[:to_remove]:
+                del self._requests[client_id]
+
+        self._last_cleanup = now
 
     def get_remaining(self, client_id: str) -> int:
         now = time.time()

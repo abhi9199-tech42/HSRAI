@@ -22,6 +22,15 @@ class ReasoningPath:
         edge_ids = tuple((e.source_id, e.target_id) for e in self.edges)
         return hash((node_ids, edge_ids))
 
+    def get_stable_id(self) -> str:
+        """Generate a stable identifier for the path based on its content."""
+        node_ids = tuple(n.id for n in self.nodes)
+        edge_ids = tuple((e.source_id, e.target_id) for e in self.edges)
+        # Use deterministic string representation
+        import hashlib
+        content = f"nodes:{node_ids}|edges:{edge_ids}"
+        return hashlib.sha256(content.encode()).hexdigest()[:16]
+
 class HybridReasoningEngine:
     """
     Orchestrates hybrid reasoning using structural graph traversal
@@ -32,9 +41,9 @@ class HybridReasoningEngine:
         self.graph = graph
         self.gating = gating or OscillatoryGating()
         self.active_paths: List[ReasoningPath] = []
-        self.prev_best_path_hash: Optional[int] = None
+        self.prev_best_path_id: Optional[str] = None
         self.stability_counter: int = 0
-        self.convergence_threshold: float = 0.1 # Minimum Mu to consider
+        self.convergence_threshold: float = 0.1  # Minimum Mu to consider
 
     def find_paths(self, start_id: str, end_id: str, max_depth: int = 10) -> List[ReasoningPath]:
         """
@@ -115,15 +124,15 @@ class HybridReasoningEngine:
         path.mu_stability = mu
         return mu
 
-    def step(self, dt: float = 0.1) -> Optional[ReasoningPath]:
+    async def step(self, dt: float = 0.1) -> Optional[ReasoningPath]:
         """
         Advance the reasoning process by one time step.
         Returns the best path if convergence is reached.
         """
-        self.gating.advance_time(dt)
+        await self.gating.advance_time(dt)
 
         # Only process if in attention window
-        if not self.gating.in_attention_window():
+        if not await self.gating.in_attention_window():
             return None
 
         # Update stabilities
@@ -134,13 +143,8 @@ class HybridReasoningEngine:
             mu = self.calculate_stability(path)
 
             # Apply Gating to stability (modulation)
-            # We create a pseudo-vector for the path stability to apply gating
-            # In a full model, this would be the node's resonance vector
-            # Here we just modulate the scalar mu
-
-            # Simple modulation: mu_gated = mu * cos_phase (if positive)
             g_t = self.gating.get_global_rhythm()
-            modulation = max(0.1, g_t[1]) # Ensure non-negative multiplier
+            modulation = max(0.1, g_t[1])  # Ensure non-negative multiplier
 
             path.mu_stability = mu * modulation
 
@@ -152,19 +156,20 @@ class HybridReasoningEngine:
         # Check if the best path has been consistently selected
 
         if best_path and best_mu > self.convergence_threshold:
-            current_path_hash = hash(best_path)
+            # Use stable identifier based on path content, not Python's hash()
+            current_path_id = best_path.get_stable_id()
 
-            if current_path_hash == self.prev_best_path_hash:
+            if current_path_id == self.prev_best_path_id:
                 self.stability_counter += 1
             else:
                 self.stability_counter = 0
-                self.prev_best_path_hash = current_path_hash
+                self.prev_best_path_id = current_path_id
 
             # If stable for N cycles, converge
             if self.stability_counter >= 5:
                 return best_path
         else:
              self.stability_counter = 0
-             self.prev_best_path_hash = None
+             self.prev_best_path_id = None
 
         return None

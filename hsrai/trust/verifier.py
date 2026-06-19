@@ -1,6 +1,9 @@
+import asyncio
 import base64
+import hashlib
 import logging
 import os
+import threading
 from datetime import datetime
 from typing import Any, List, Optional
 
@@ -73,6 +76,8 @@ class TrustManager:
         self.key_path = key_path or DEFAULT_KEY_PATH
         self.verifier = BehavioralVerifier()
         self.certificate_chain: List[TrustCertificate] = []
+        self._key_lock = asyncio.Lock()
+        self._sync_lock = threading.Lock()
 
         if self.key_path and os.path.exists(self.key_path):
             self._load_key(self.key_path)
@@ -91,6 +96,15 @@ class TrustManager:
         with open(path, 'rb') as f:
             self._private_key = load_pem_private_key(f.read(), password=None)
 
+    def _compute_public_key_fingerprint(self) -> str:
+        """Compute SHA256 fingerprint of the current public key."""
+        from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
+        public_der = self.public_key.public_bytes(
+            encoding=Encoding.DER,
+            format=PublicFormat.SubjectPublicKeyInfo
+        )
+        return hashlib.sha256(public_der).hexdigest()[:16]
+
     def save_keys(self) -> None:
         """Save the current private key to key_path."""
         if not self.key_path:
@@ -103,12 +117,21 @@ class TrustManager:
                 encryption_algorithm=NoEncryption(),
             ))
 
-    def rotate_keys(self) -> None:
+    async def rotate_keys(self) -> None:
         """Generate a new key pair, replacing the current one."""
-        self._private_key = ec.generate_private_key(ec.SECP256R1())
-        self.public_key = self._private_key.public_key()
-        if self.key_path:
-            self.save_keys()
+        async with self._key_lock:
+            self._private_key = ec.generate_private_key(ec.SECP256R1())
+            self.public_key = self._private_key.public_key()
+            if self.key_path:
+                self.save_keys()
+
+    def rotate_keys_sync(self) -> None:
+        """Synchronous version for non-async contexts."""
+        with self._sync_lock:
+            self._private_key = ec.generate_private_key(ec.SECP256R1())
+            self.public_key = self._private_key.public_key()
+            if self.key_path:
+                self.save_keys()
 
     def save_keys_if_configured(self) -> None:
         """Save keys only if a key_path is configured."""
@@ -126,7 +149,7 @@ class TrustManager:
         if isinstance(subject, IntentNode):
             trust_score = self.verifier.calculate_alignment_score(subject)
         else:
-            trust_score = 1.0 # Default for other objects
+            trust_score = 1.0  # Default for other objects
 
         # Create Payload for Signing
         timestamp = datetime.now().timestamp()
@@ -139,13 +162,17 @@ class TrustManager:
         )
         signature = base64.b64encode(signature_bytes).decode('utf-8')
 
+        # Compute public key fingerprint for verification after key rotation
+        pub_fingerprint = self._compute_public_key_fingerprint()
+
         # Deterministic Certificate ID
         cert_data = {
             "issuer": self.issuer_id,
             "subject": subject_id,
             "score": trust_score,
             "timestamp": timestamp,
-            "signature": signature
+            "signature": signature,
+            "pub_fingerprint": pub_fingerprint
         }
         cert_id = f"cert_{deterministic_id(cert_data)[:8]}"
 
@@ -156,6 +183,7 @@ class TrustManager:
             trust_score=trust_score,
             timestamp=timestamp,
             signature=signature,
+            public_key_fingerprint=pub_fingerprint,
             claims={"type": str(type(subject))}
         )
 
@@ -170,7 +198,16 @@ class TrustManager:
         if not (0.0 <= cert.trust_score <= 1.0):
             return False
 
-        # 2. Verify Cryptographic Signature
+        # 2. Check public key fingerprint matches current key
+        current_fingerprint = self._compute_public_key_fingerprint()
+        if cert.public_key_fingerprint and cert.public_key_fingerprint != current_fingerprint:
+            logger.warning(
+                "Certificate %s was signed with a different key (fingerprint: %s vs %s)",
+                cert.certificate_id, cert.public_key_fingerprint, current_fingerprint
+            )
+            return False
+
+        # 3. Verify Cryptographic Signature
         try:
             payload = f"{cert.subject_id}:{cert.trust_score}:{cert.timestamp}".encode('utf-8')
             signature_bytes = base64.b64decode(cert.signature)

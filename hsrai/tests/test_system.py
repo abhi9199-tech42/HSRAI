@@ -35,13 +35,9 @@ class TestSystemReliability:
     @pytest.mark.anyio
     async def test_error_recovery_stability(self):
         """Property 16: Error recovery stability"""
-        # Set a very short timeout to force timeout error
-        config = SystemConfig(timeout_ms=1)
+        # Set zero timeout to force immediate timeout
+        config = SystemConfig(timeout_ms=0)
         controller = SystemController(config)
-
-        # This simulates a slow operation (relative to timeout)
-        # Note: The actual processing might be fast, but 1ms is very strict.
-        # If it's too fast, we might pass. Let's mock if needed, but try real first.
 
         result = await controller.process_request("Heavy computation", request_id="timeout_req")
 

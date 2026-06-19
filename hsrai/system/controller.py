@@ -92,14 +92,12 @@ class SystemController:
         return await self._generate_output(path, request_id)
 
     async def _compress(self, input_text: str, source_id: str):
-        await asyncio.sleep(0.001)
         plugin = self.plugin_manager.get_compression()
         if plugin:
             return plugin.process(input_text, source_id=source_id)
         return self.multimodal.process_text(input_text, source_id=source_id)
 
     async def _build_graph(self, primitive, request_id: str):
-        await asyncio.sleep(0.001)
         builder = IntentGraphBuilder()
         goal_node = builder.create_node(IntentType.GOAL, [primitive])
 
@@ -130,7 +128,7 @@ class SystemController:
 
         engine.find_paths(start_id, end_id)
         for _ in range(50):
-            converged = engine.step(dt=0.1)
+            converged = await engine.step(dt=0.1)
             if converged:
                 self.observer_mgr.notify_path_found(converged, request_id)
                 return converged
@@ -153,8 +151,12 @@ class SystemController:
         return output
 
     def _error(self, message: str, request_id: str) -> GeneratedOutput:
+        error_content = f"Error: {message}"
+        error_id = f"err_{deterministic_id({'content': error_content, 'request_id': request_id})[:8]}"
+        cert = self.trust_manager.generate_certificate(error_content, error_id)
         return GeneratedOutput(
-            content=f"Error: {message}",
+            content=error_content,
             format="text",
+            trust_certificate=cert,
             metadata={"error": True, "request_id": request_id},
         )

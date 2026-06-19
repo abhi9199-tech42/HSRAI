@@ -1,6 +1,6 @@
-import uuid
 from typing import Any, Dict, List
 
+from hsrai.core.utils import deterministic_id
 from ..compression.multimodal import MultimodalProcessor
 from ..graph.builder import IntentGraphBuilder
 from ..knowledge.engine import KnowledgeQueryEngine
@@ -36,7 +36,7 @@ class ISREPipeline:
         """
         Executes the full pipeline process.
         """
-        request_id = str(uuid.uuid4())
+        request_id = f"req_{deterministic_id({'input': str(raw_input), 'modality': modality})[:8]}"
         self._log(request_id, "start", {"input": raw_input, "modality": modality})
 
         # 0. Resource Check (Graceful Degradation - Requirement 7.5)

@@ -48,7 +48,7 @@ def test_phoneme_mapper():
 def test_oscillatory_gating():
     gating = OscillatoryGating(resonance_dim=24)
     vec = np.ones(24)
-    gated = gating.apply_gating(vec)
+    gated = gating.apply_gating_sync(vec)
     assert gated.shape == (24,)
 
 if __name__ == "__main__":

@@ -1,17 +1,21 @@
+import logging
 from typing import Dict, List
 
 import numpy as np
 
 from hsrai.common.phoneme import FrequencyPath, PhonemeSequence
 
+logger = logging.getLogger(__name__)
+
 
 class PhonemeFrequencyMapper:
     """
-    Maps Sanskrit-derived phonemes to continuous frequency vectors in K-dimensional space.
+    Maps phonemes to continuous frequency vectors in K-dimensional space.
+    Supports configurable phoneme sets for different languages.
     """
 
-    # Sanskrit-derived phoneme set for complete articulatory coverage
-    SANSKRIT_PHONEMES = {
+    # Default Sanskrit-derived phoneme set for complete articulatory coverage
+    DEFAULT_PHONEMES = {
         # Vowels (स्वर)
         'a', 'ā', 'i', 'ī', 'u', 'ū', 'ṛ', 'ṝ', 'ḷ', 'ḹ', 'e', 'ai', 'o', 'au',
 
@@ -37,18 +41,20 @@ class PhonemeFrequencyMapper:
         'x', 'z', 'f', 'w'  # For non-Sanskrit languages
     }
 
-    def __init__(self, frequency_dim: int = 24, smoothness_weight: float = 0.1):
+    def __init__(self, frequency_dim: int = 24, smoothness_weight: float = 0.1,
+                 phoneme_set: set = None):
         """
         Initialize the phoneme-frequency mapper.
 
         Args:
             frequency_dim: Dimensionality of frequency vectors (K ∈ [16, 32])
             smoothness_weight: Weight for smoothness constraint enforcement
+            phoneme_set: Custom phoneme set (defaults to Sanskrit-derived set)
         """
         if not (16 <= frequency_dim <= 32):
             raise ValueError("Frequency dimension K must be in range [16, 32]")
 
-        self.phoneme_space = self.SANSKRIT_PHONEMES.copy()
+        self.phoneme_space = phoneme_set or self.DEFAULT_PHONEMES.copy()
         self.K = frequency_dim
         self.smoothness_weight = smoothness_weight
 
@@ -108,6 +114,7 @@ class PhonemeFrequencyMapper:
             else:
                 # Fallback for unknown phonemes - use average of nearest known vectors
                 # to maintain unit normalization consistency
+                logger.warning("Unknown phoneme '%s', using fallback vector", phoneme)
                 if self.phoneme_vectors:
                     avg_vec = np.mean(list(self.phoneme_vectors.values()), axis=0)
                     norm = np.linalg.norm(avg_vec)
